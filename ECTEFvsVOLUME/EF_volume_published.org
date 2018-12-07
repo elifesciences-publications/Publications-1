@@ -292,6 +292,7 @@ write.csv(kiir, '/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_c
 #+END_SRC
 
 #+RESULTS:
+
 **** Calculating pairwise volumetric changes between R and L and Figure between R and L
 #+BEGIN_SRC R :session ECTanal
    myres5v3<-matrix(NA,floor(length(myroi.names)/2),6)
@@ -409,6 +410,7 @@ write.csv(kiir, '/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_c
 #+END_SRC
 
 #+RESULTS:
+
 **** Calculating and writing out nii.gz images for showing 42 pairs of ROI representation of data
 #+BEGIN_SRC R :session ECTanal
 library(oro.nifti)
@@ -445,6 +447,7 @@ writenii(nim = lat.dVOL, '/nethome/amiklos/work/ECT/Bergen/N156_LATER_INDEX_dVOL
 
 
 #+END_SRC
+
 **** Calculating simple correlation between meanEF and d \Delta Volume across regions
 #+BEGIN_SRC R :session ECTanal
   myres8v3<-matrix(NA,length(myroi.names),4)
@@ -492,6 +495,7 @@ writenii(nim = lat.dVOL, '/nethome/amiklos/work/ECT/Bergen/N156_LATER_INDEX_dVOL
 #+END_SRC
 
 #+RESULTS:
+
 **** Calculating and writing out nii images across 85 ROIs
 #+BEGIN_SRC R :session ECTanal
 library(oro.nifti)
@@ -535,8 +539,11 @@ writenii(nim = meanEF, '/nethome/amiklos/work/ECT/Bergen/N156_meanVOLch_regions.
 
 
 #+END_SRC
+
 *** Create Figures
+
 **** Figures with ROIs
+
 ***** Volume and EF comparision figure, plus adding correlations and boxplot BIG
  #+BEGIN_SRC sh
  cd /nethome/amiklos/work/ECT/Bergen
@@ -560,6 +567,7 @@ writenii(nim = meanEF, '/nethome/amiklos/work/ECT/Bergen/N156_meanVOLch_regions.
   #+END_SRC
 
   #+RESULTS:
+
 ***** Volume and EF comparision figure, plus adding correlations and boxplot SMALL
  #+BEGIN_SRC sh
  cd /nethome/amiklos/work/ECT/Bergen
@@ -622,6 +630,7 @@ writenii(nim = meanEF, '/nethome/amiklos/work/ECT/Bergen/N156_meanVOLch_regions.
  #+RESULTS:
 
 **** Figures for individual variability
+
 ***** Calculating the individual relationships in Hippocampus
 #+BEGIN_SRC R :session ECTanal
     # missing hippocampus data in 4 patients imputed here with mean, missing from
@@ -779,7 +788,9 @@ writenii(nim = meanEF, '/nethome/amiklos/work/ECT/Bergen/N156_meanVOLch_regions.
 
  #+RESULTS:
  : 1
+
 * Demographic Data and Statistics 
+
 ** Sample Size
 #+BEGIN_SRC R :session ECTanal :exports none :results values drawer
 mean.age<-mean(fd$Age.1[ind.fd])
@@ -801,7 +812,9 @@ paste0(Nres,'\n',  meanres, '\n', sdres, '\n', femres)
 #+MACRO: fem 94
 :END:
 We analyzed N = {{{N}}}({{{fem}}}F); Age: {{{ma}}} +/- {{{sa}}}.
+
 ** Clinical Outcome
+
 *** Basic relationships
 #+BEGIN_SRC R :session ECTanal :exports none :results values drawer
   madrschange<-mean(fd$madrs_hdrs_percentage_cahnge[ind.fd])
@@ -838,6 +851,7 @@ the end of the course of ECT MADRS was {{{MADRS3}}} (range:
 {{{r31}}}-{{{r32}}}). The average improvement was {{{mch}}} +/- {{{sdmch}}}%.
 
 *** Confounds
+
 **** Age and clinical response
 #+BEGIN_SRC R :session ECTanal :exports none :results values drawer
     res<-cor.test(fd$madrs_hdrs_percentage_cahnge[1:151],fd$Age.1[1:151])
@@ -892,6 +906,7 @@ Age was correlating with total brain volume (t = {{{tot1}}}, df = {{{tot2}}}, r 
 {{{tot3}}}, p = {{{tot4}}}.
 
 ** Correlation statistics
+
 *** Correlation between EF and Volume across regions
 #+BEGIN_SRC R :session ECTanal :exports none :results values drawer
   res<-result.cor.meanEFdvol
@@ -997,6 +1012,7 @@ p = {{{p_1}}}; df = {{{df_1}}}; t = {{{t_1}}}.
 | left          | 4.0121  | 149.0000 | 0.0001 | 0.3122                          |
 | right         | 4.0207  | 149.0000 | 0.0001 | 0.3129                          |
 | paired-t-test | 13.5849 | 150.0000 | 0.0000 | 0.0287                   
+
 * Figures
 
 #+CAPTION: Illustration of the methods. We have analyzed longitudinal structural MRI data from 151 individuals. We have calculated the volume change and the magnitude of  electrical field in 85 regions across the human cortex and subcortical structures.    
