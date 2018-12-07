@@ -2,7 +2,7 @@
 #+TITLE: Statistics, figures and tables
 #+OPTIONS: num:nil tol:2
 # -*- org-confirm-babel-evaluate: nil -*-
-* Final Analysis                                                   :noexport:
+* Final Analysis                
 *** Calculating 
 **** Initializing, we use all data N=156, but 5 Volumes missing, N=151
 #+BEGIN_SRC R :session ECTanal
@@ -775,7 +775,7 @@ writenii(nim = meanEF, '/nethome/amiklos/work/ECT/Bergen/N156_meanVOLch_regions.
 
  #+RESULTS:
  : 1
-* Demographic Data and Statistics :noexport:
+* Demographic Data and Statistics 
 ** Sample Size
 #+BEGIN_SRC R :session ECTanal :exports none :results values drawer
 mean.age<-mean(fd$Age.1[ind.fd])
@@ -992,8 +992,7 @@ p = {{{p_1}}}; df = {{{df_1}}}; t = {{{t_1}}}.
 | all           | 11.3538 | 300.0000 | 0.0000 | 0.5482                          |
 | left          | 4.0121  | 149.0000 | 0.0001 | 0.3122                          |
 | right         | 4.0207  | 149.0000 | 0.0001 | 0.3129                          |
-| paired-t-test | 13.5849 | 150.0000 | 0.0000 | 0.0287                          |
-
+| paired-t-test | 13.5849 | 150.0000 | 0.0000 | 0.0287                   
 * Figures
 
 #+CAPTION: Illustration of the methods. We have analyzed longitudinal structural MRI data from 151 individuals. We have calculated the volume change and the magnitude of  electrical field in 85 regions across the human cortex and subcortical structures.    
