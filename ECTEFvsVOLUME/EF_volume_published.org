@@ -147,6 +147,7 @@
 I have checked results without obvious two outliers, but no difference. 
 #r/o EM and ZV outliers
 #ind.fd<-which(fd$madrs_hdrs_percentage_cahnge> (-0.25))
+
 **** Calculating \Delta Volume ~ EF + Age + ECTnumber + Site
 #+BEGIN_SRC R :session ECTanal
   myres1v3.s<-matrix(NA,length(myroi.names),6)
@@ -180,6 +181,7 @@ I have checked results without obvious two outliers, but no difference.
 #+END_SRC
 
 #+RESULTS:
+
 **** Calculating \Delta MADRS ~ \Delta Volume + Age + ECTnum + Site
 #+BEGIN_SRC R :session ECTanal
 myres2v3.s<-matrix(NA,length(myroi.names),6)
@@ -235,6 +237,7 @@ write.csv(kiir, '/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_c
 Interestingly no results here either. I did the whole analysis with
 BaselineTotalBrain volume as control for confound, very similar results. (as
 expected since age correlates with TotBrainVolume pretty much)
+
 **** Calculating \Delta MADRS ~ EF * \Delta Volume + Age + ECTnumber + Site
 #+BEGIN_SRC R :session ECTanal
   myres3v3.si<-matrix(NA,length(myroi.names),6)
@@ -263,6 +266,7 @@ expected since age correlates with TotBrainVolume pretty much)
 Interestingly no results here either. I did the whole analysis with
 BaselineTotalBrain volume as control for confound, very similar results. (as
 expected since age correlates with TotBrainVolume pretty much)
+
 **** Calculating volumetric changes: one sample t-test
 #+BEGIN_SRC R :session ECTanal
 #volumetric changes
