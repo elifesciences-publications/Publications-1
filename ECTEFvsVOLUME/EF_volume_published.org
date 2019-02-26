@@ -1501,25 +1501,25 @@ p = {{{p_1}}}; df = {{{df_1}}}; t = {{{t_1}}}.
 
 #+CAPTION: Volume change across 85 brain regions. Upper panel first row: mean EF across 85 brain regions; second row: the effect size of volume changes between baseline and at the end of the course of ECT across 85 regions. Lower panel, left: As expected, effect sizes of right unilateral stimulations were consistently higher on the right side than on the left side. Lower panel, right: The scatter plot indicates strong correlation between regional EF a regional volume change (r = {{{r}}}; p = {{{p}}}; df = {{{df}}}; t = {{{t}}}.  
 #+NAME: fig:VOL-CHANGE_85ROI
-[[/nethome/amiklos/work/ECT/Bergen/Figure_small_ROI_based_volume_change.png]]
+[[./Figures/Figure_small_ROI_based_volume_change.png]]
 
 #+CAPTION: Laterality Indices of EF (upper) and Volume change (lower): effect size of the paired wise difference across regions. Lower panel indicates the correlation among the laterality indices of EF and volume changes (r = {{{r_1}}}; p = {{{p_1}}}; df = {{{df_1}}}; t = {{{t_1}}}). The correlation indicates that the more the EF lateralized, the more the corresponding volume change as well.    
 #+NAME: fig:LAT-IND_42ROI
-[[/nethome/amiklos/work/ECT/Bergen/Figure_LatInd_42ROI.png]]
+[[./Figures/Figure_LatInd_42ROI.png]]
 
 
 #+CAPTION: Individual specific relationship beteween EF and volume change in the hippocampus. The left panel indicates that there is a strong dose dependent relationship between EF and volume change in the hippocampus (t = src_R[:eval q :var t=table-hippocampus[2,1]]{t}, df = src_R[:eval q :var df=table-hippocampus[2,2]]{df}, r = src_R[:eval q :var r=table-hippocampus[2,4]]{r}, p = src_R[:eval q :var mp=table-hippocampus[2,3]]{mp} ). The left side (orange dots) has a very robust relationship (t = src_R[:eval q :var t=table-hippocampus[3,1]]{t}, df = src_R[:eval q :var df=table-hippocampus[3,2]]{df}, r = src_R[:eval q :var r=table-hippocampus[3,4]]{r}, p = src_R[:eval q :var mp=table-hippocampus[3,3]]{mp}) , and event though this relationship on the right side is not significant (probably due to ceiling effect) (t = src_R[:eval q :var t=table-hippocampus[4,1]]{t}, df = src_R[:eval q :var df=table-hippocampus[4,2]]{df}, r = src_R[:eval q :var r=table-hippocampus[4,4]]{r}, p = src_R[:eval q :var mp=table-hippocampus[4,3]]{mp})  it scales nicely with the left sided values. The right panel shows the volume changes in the corresponding individuals in both hemispheres (t = src_R[:eval q :var t=table-hippocampus[5,1]]{t}, df = src_R[:eval q :var df=table-hippocampus[5,2]]{df}, mean difference = src_R[:eval q :var r=table-hippocampus[5,4]]{r}, p = src_R[:eval q :var mp=table-hippocampus[5,3]]{mp} . 
 #+NAME: fig:EFvVOLinHIPPOCAMPUS
-[[/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/v2-EF_v_Hippocampus.png]]
+[[./Figures/v2-EF_v_Hippocampus.png]]
 
 #+CAPTION: Individual specific relationship beteween EF and volume change in the amygdala. The left panel indicates that there is a strong dose dependent relationship between EF and volume change in the amygdala (t = src_R[:eval q :var t=table-amygdala[2,1]]{t}, df = src_R[:eval q :var df=table-amygdala[2,2]]{df}, r = src_R[:eval q :var r=table-amygdala[2,4]]{r}, p = src_R[:eval q :var mp=table-amygdala[2,3]]{mp} ). Both the left (orange dots) and right (blue dots) side has a very robust relationship (t = src_R[:eval q :var t=table-amygdala[3,1]]{t}, df = src_R[:eval q :var df=table-amygdala[3,2]]{df}, r = src_R[:eval q :var r=table-amygdala[3,4]]{r}, p = src_R[:eval q :var mp=table-amygdala[3,3]]{mp}) and (t = src_R[:eval q :var t=table-amygdala[4,1]]{t}, df = src_R[:eval q :var df=table-amygdala[4,2]]{df}, r = src_R[:eval q :var r=table-amygdala[4,4]]{r}, p = src_R[:eval q :var mp=table-amygdala[4,3]]{mp}) respectively. The right panel shows the volume changes in the corresponding individuals in both hemispheres (t = src_R[:eval q :var t=table-amygdala[5,1]]{t}, df = src_R[:eval q :var df=table-amygdala[5,2]]{df}, mean difference = src_R[:eval q :var r=table-amygdala[5,4]]{r}, p = src_R[:eval q :var mp=table-amygdala[5,3]]{mp} . 
 #+NAME: fig:EFvVOLinAmygdala
-[[/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/v2-EF_v_Amygdala.png]]
+[[./Figures/v2-EF_v_Amygdala.png]]
 
 * Supplementary Figures
 #+CAPTION: EF and Volume specificity. To test the specificity of our measures in the bilateral amygdala and the left hippocampus (FDR corrected findings) we permutated the labels across the 85 ROIs. First in the volume changes (left panel) and then in the EF values (right panel) and calculated correlations between the  EF and volume change of these regions respectively. This way we received 85 different values, where one of them was the "correct" correlation, indicated with red dots. The correlations between the EF and corresponding volume outperformed the other correlations (were in the top 5 percentile) from non-matching pairs in most of the cases, indicating that our findings were not merely a general correlation with some average values across regions, further strengthening the casual link between EF and volume change.  
 #+NAME: fig:EF-VOL-spec-3ROI
-[[/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/EF-Volume-Specificity.png]]
+[[./Figures/EF-Volume-Specificity.png]]
 
 * Supplementary Tables
 ** Supplementary Table 1
