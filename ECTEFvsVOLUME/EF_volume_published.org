@@ -1497,7 +1497,7 @@ p = {{{p_1}}}; df = {{{df_1}}}; t = {{{t_1}}}.
 
 #+CAPTION: Illustration of the methods. We have analyzed longitudinal structural MRI data from 151 individuals. We have calculated the volume change and the magnitude of  electrical field in 85 regions across the human cortex and subcortical structures.    
 #+NAME: fig:METHODS
-[[/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/Figure_resources/Figure_Method.png]]
+[[./Figures/Figure_Method.png]]
 
 #+CAPTION: Volume change across 85 brain regions. Upper panel first row: mean EF across 85 brain regions; second row: the effect size of volume changes between baseline and at the end of the course of ECT across 85 regions. Lower panel, left: As expected, effect sizes of right unilateral stimulations were consistently higher on the right side than on the left side. Lower panel, right: The scatter plot indicates strong correlation between regional EF a regional volume change (r = {{{r}}}; p = {{{p}}}; df = {{{df}}}; t = {{{t}}}.  
 #+NAME: fig:VOL-CHANGE_85ROI
