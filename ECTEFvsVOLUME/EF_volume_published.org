@@ -2,63 +2,6 @@
 #+TITLE: Statistics, figures and tables
 #+OPTIONS: num:nil tol:2
 # -*- org-confirm-babel-evaluate: nil -*-
-* Preliminary Explorations                                         :noexport: 
-# fo forras
-/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/analysing_final.R
-** 2018-10-17
-You will find four files under
-/home/mar066/data/Data/rul2018MAR/RAnalysis
-*** GEMRIC_RUL_ROI_2018OCT.R
-Here I run the voxel wise analysis with EF and correcting for age:
-dMADRS~EF+Age+ectnumber, also did interaction
-Results barely make p<0.05
-*** GEMRIC_RUL_ROI_2018OCT2.R as Chris wanted
-ROI based analysis with WholeBrain.baseline 
-Not too different to Age corrected in v3 (see below)
-EF~dVOL but nothing really else
-*** GEMRIC_RUL_ROI_2018OCT3.R
-This is age ROI based (see above) no dVOL and EF results that meaningful.
-*** GEMRIC_RUL_ROI_2018OCT4.R
-In desperation I controlled for peak EF which was in the 
-pars_orbitalis, of course it correlated with age, so this 
-is not good again.
-But wait a minute!
-age correlated negatively with EF, the higher age the lower EF in
-pars orbitalis!!!!
-EF 85 roi ->Age  ?
-Vegul kirajzolodott egy kep hogy pont a parsorbitalis kivetelevel 
-igaz volt hgy ahol nagy EF volt ott positiv korrelacio volt az age-l
-ahol alacsony volt ott negative correlation was with age.
-This means that age was having more spatial variance in EF distribution.
-*** GEMRIC_RUL_ROI_2018OCT5
-Akkor fekudjunk ra kicsit az EF-re:
-What we really want to show, that this is really not only
-a kind of average EF, but very specifically it is related to that side.
-** 2018-10-18
-I have copied couple of files over my computer
-I worked in /nethome/amiklos/work/ECT/Bergen/N154/EF-further-analysing.R
-trying desparately find any EF~change.
-The variation across diferent measures is nice.
-However to see EFdistribution versus volume distirbution absolutely dead end.
-** 2018-10-23
-EF-further-analysing will have the FDR correction values, also the plots will
-be here, with the EF specificity and volumetric specificity
-+basic columetric analysis
-
-EF-further-analysing2: will have the clustering mambo jambo that has not
-provided any results so far....
-** 2018-10-25 New idea
-a delta kulonbseg a ket side kozott ami korrelal a novekmennyel
-nem mukodik!! de nem mukodik a dvol~def between R_L
-
-myres8v3: showing that meanEF and d volume change is having a very decent
-relationship...
-I had to make nice figures that was based on
-/usr/local/opt/freesurfer5.3/FreeSurferColorLUT.txt
-found them here: https://osf.io/c7dax/
-
-Downloaded here: /nethome/amiklos/ATLASES
-
 * Final Analysis                                                   :noexport:
 *** Calculating 
 **** Initializing, we use all data N=156, but 5 Volumes missing, N=151
