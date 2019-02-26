@@ -2,17 +2,76 @@
 #+TITLE: Statistics, figures and tables
 #+OPTIONS: num:nil tol:2
 # -*- org-confirm-babel-evaluate: nil -*-
-* Final Analysis                
+* Preliminary Explorations                                         :noexport: 
+# fo forras
+/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/analysing_final.R
+** 2018-10-17
+You will find four files under
+/home/mar066/data/Data/rul2018MAR/RAnalysis
+*** GEMRIC_RUL_ROI_2018OCT.R
+Here I run the voxel wise analysis with EF and correcting for age:
+dMADRS~EF+Age+ectnumber, also did interaction
+Results barely make p<0.05
+*** GEMRIC_RUL_ROI_2018OCT2.R as Chris wanted
+ROI based analysis with WholeBrain.baseline 
+Not too different to Age corrected in v3 (see below)
+EF~dVOL but nothing really else
+*** GEMRIC_RUL_ROI_2018OCT3.R
+This is age ROI based (see above) no dVOL and EF results that meaningful.
+*** GEMRIC_RUL_ROI_2018OCT4.R
+In desperation I controlled for peak EF which was in the 
+pars_orbitalis, of course it correlated with age, so this 
+is not good again.
+But wait a minute!
+age correlated negatively with EF, the higher age the lower EF in
+pars orbitalis!!!!
+EF 85 roi ->Age  ?
+Vegul kirajzolodott egy kep hogy pont a parsorbitalis kivetelevel 
+igaz volt hgy ahol nagy EF volt ott positiv korrelacio volt az age-l
+ahol alacsony volt ott negative correlation was with age.
+This means that age was having more spatial variance in EF distribution.
+*** GEMRIC_RUL_ROI_2018OCT5
+Akkor fekudjunk ra kicsit az EF-re:
+What we really want to show, that this is really not only
+a kind of average EF, but very specifically it is related to that side.
+** 2018-10-18
+I have copied couple of files over my computer
+I worked in /nethome/amiklos/work/ECT/Bergen/N154/EF-further-analysing.R
+trying desparately find any EF~change.
+The variation across diferent measures is nice.
+However to see EFdistribution versus volume distirbution absolutely dead end.
+** 2018-10-23
+EF-further-analysing will have the FDR correction values, also the plots will
+be here, with the EF specificity and volumetric specificity
++basic columetric analysis
+
+EF-further-analysing2: will have the clustering mambo jambo that has not
+provided any results so far....
+** 2018-10-25 New idea
+a delta kulonbseg a ket side kozott ami korrelal a novekmennyel
+nem mukodik!! de nem mukodik a dvol~def between R_L
+
+myres8v3: showing that meanEF and d volume change is having a very decent
+relationship...
+I had to make nice figures that was based on
+/usr/local/opt/freesurfer5.3/FreeSurferColorLUT.txt
+found them here: https://osf.io/c7dax/
+
+Downloaded here: /nethome/amiklos/ATLASES
+
+* Final Analysis                                                   :noexport:
 *** Calculating 
 **** Initializing, we use all data N=156, but 5 Volumes missing, N=151
+***** Original initialization, without excluding EF outliers
 #+BEGIN_SRC R :session ECTanal
-  fd<-read.csv('~/fd.csv')
+  fd<-read.csv('/nethome/amiklos/work/ECT/Bergen/N154/fd.csv')
   library(ggplot2)
   ggplot(data=fd,aes(x=Site.1,y=madrs_hdrs_percentage_cahnge))+
     geom_boxplot()+
     geom_point()
   #ind.fd<-which(fd$madrs_hdrs_percentage_cahnge> (-5))
   ind.fd<-which(!is.na(fd$Right.Amygdala.baseline.3))
+
   length(ind.fd)
   myroi.names<-colnames(fd)[grep("EF_",colnames(fd))][c(5:9,12:14,16:17,24:32,44:76,79:111)]
   myvol.names<-c()
@@ -34,6 +93,9 @@
 
   #medication free
   length(which(fd$antidepressants.1[ind.fd]==0))
+  mfr<-which(fd$antidepressants.1==0)
+  med.free<-intersect(mfr,ind.fd)
+  under.med<-setdiff(ind.fd, med.free)
 
   #SSRI
   length(which(fd$antidepressants.1[ind.fd]==1))
@@ -146,8 +208,191 @@
 | EF_ctx.rh.transversetemporal       | volumechange_ctx.rh.transversetemporal       |
 I have checked results without obvious two outliers, but no difference. 
 #r/o EM and ZV outliers
-#ind.fd<-which(fd$madrs_hdrs_percentage_cahnge> (-0.25))
+#ind.fd<-which(fd$madrs_hdrs_percentage_cahnge> (-0.25)) 
+***** Alternative Initializing, excluding EF outliers
+#+BEGIN_SRC R :session ECTanal
+  fd<-read.csv('/nethome/amiklos/work/ECT/Bergen/N154/fd.csv')
+  library(ggplot2)
+  ggplot(data=fd,aes(x=Site.1,y=madrs_hdrs_percentage_cahnge))+
+    geom_boxplot()+
+    geom_point()
+  #ind.fd<-which(fd$madrs_hdrs_percentage_cahnge> (-5))
+  qH<-quantile(fd$EF_Right.Hippocampus)
+  iqr.cr<-qH[4]+(1.5*(qH[4]-qH[2]))
+  #which(fd$EF_Right.Hippocampus<iqr.cr)
 
+  ind.fd<-which(!is.na(fd$Right.Amygdala.baseline.3) & (fd$EF_Right.Hippocampus<iqr.cr))
+
+  length(ind.fd)
+  myroi.names<-colnames(fd)[grep("EF_",colnames(fd))][c(5:9,12:14,16:17,24:32,44:76,79:111)]
+  myvol.names<-c()
+  for (j in myroi.names)
+  {
+    myvol.names<-c(myvol.names,colnames(fd)[grep('volumechange_',colnames(fd))][grep(strsplit(j,'EF_')[[1]][2],colnames(fd)[grep('volumechange_',colnames(fd))])])
+  }
+  varnames<-data.frame(myroi.names,myvol.names)
+
+  #MECTA
+  length(which(fd$ect_device.1[ind.fd]==1))
+  #THYMATRON
+  length(which(fd$ect_device.1[ind.fd]==2))
+  ##sites per device
+  ggplot(data=fd[ind.fd,],aes(x=Site.1,y=ect_device.1))+
+      geom_point()
+
+  # medication
+
+  #medication free
+  length(which(fd$antidepressants.1[ind.fd]==0))
+  mfr<-which(fd$antidepressants.1==0)
+  med.free<-intersect(mfr,ind.fd)
+  under.med<-setdiff(ind.fd, med.free)
+
+  #SSRI
+  length(which(fd$antidepressants.1[ind.fd]==1))
+
+  #SNRI
+  length(which(fd$antidepressants.1[ind.fd]==2))
+
+  #TCA
+  length(which(fd$antidepressants.1[ind.fd]==3))
+
+  #MAOI
+  length(which(fd$antidepressants.1[ind.fd]==4))
+
+  #MISC
+  length(which(fd$antidepressants.1[ind.fd]==5))
+
+  ind.ch<-which(fd$antidepressants.3[ind.fd]-fd$antidepressants.1[ind.fd]!=0)
+  cbind(fd$antidepressants.1[ind.ch],fd$antidepressants.3[ind.ch])
+  ggplot(data=fd[ind.fd,],aes(x=Site.1,y=antidepressants.1))+
+      geom_point()
+
+  fd$antidepressants.3[ind.fd]
+#+END_SRC
+
+#+RESULTS:
+| EF_Left.Cerebellum.Cortex          | volumechange_Left.Cerebellum.Cortex          |
+| EF_Left.Thalamus.Proper            | volumechange_Left.Thalamus.Proper            |
+| EF_Left.Caudate                    | volumechange_Left.Caudate                    |
+| EF_Left.Putamen                    | volumechange_Left.Putamen                    |
+| EF_Left.Pallidum                   | volumechange_Left.Pallidum                   |
+| EF_Brain.Stem                      | volumechange_Brain.Stem                      |
+| EF_Left.Hippocampus                | volumechange_Left.Hippocampus                |
+| EF_Left.Amygdala                   | volumechange_Left.Amygdala                   |
+| EF_Left.Accumbens.area             | volumechange_Left.Accumbens.area             |
+| EF_Left.VentralDC                  | volumechange_Left.VentralDC                  |
+| EF_Right.Cerebellum.Cortex         | volumechange_Right.Cerebellum.Cortex         |
+| EF_Right.Thalamus.Proper           | volumechange_Right.Thalamus.Proper           |
+| EF_Right.Caudate                   | volumechange_Right.Caudate                   |
+| EF_Right.Putamen                   | volumechange_Right.Putamen                   |
+| EF_Right.Pallidum                  | volumechange_Right.Pallidum                  |
+| EF_Right.Hippocampus               | volumechange_Right.Hippocampus               |
+| EF_Right.Amygdala                  | volumechange_Right.Amygdala                  |
+| EF_Right.Accumbens.area            | volumechange_Right.Accumbens.area            |
+| EF_Right.VentralDC                 | volumechange_Right.VentralDC                 |
+| EF_ctx.lh.bankssts                 | volumechange_ctx.lh.bankssts                 |
+| EF_ctx.lh.caudalanteriorcingulate  | volumechange_ctx.lh.caudalanteriorcingulate  |
+| EF_ctx.lh.caudalmiddlefrontal      | volumechange_ctx.lh.caudalmiddlefrontal      |
+| EF_ctx.lh.cuneus                   | volumechange_ctx.lh.cuneus                   |
+| EF_ctx.lh.entorhinal               | volumechange_ctx.lh.entorhinal               |
+| EF_ctx.lh.fusiform                 | volumechange_ctx.lh.fusiform                 |
+| EF_ctx.lh.inferiorparietal         | volumechange_ctx.lh.inferiorparietal         |
+| EF_ctx.lh.inferiortemporal         | volumechange_ctx.lh.inferiortemporal         |
+| EF_ctx.lh.isthmuscingulate         | volumechange_ctx.lh.isthmuscingulate         |
+| EF_ctx.lh.lateraloccipital         | volumechange_ctx.lh.lateraloccipital         |
+| EF_ctx.lh.lateralorbitofrontal     | volumechange_ctx.lh.lateralorbitofrontal     |
+| EF_ctx.lh.lingual                  | volumechange_ctx.lh.lingual                  |
+| EF_ctx.lh.medialorbitofrontal      | volumechange_ctx.lh.medialorbitofrontal      |
+| EF_ctx.lh.middletemporal           | volumechange_ctx.lh.middletemporal           |
+| EF_ctx.lh.parahippocampal          | volumechange_ctx.lh.parahippocampal          |
+| EF_ctx.lh.paracentral              | volumechange_ctx.lh.paracentral              |
+| EF_ctx.lh.parsopercularis          | volumechange_ctx.lh.parsopercularis          |
+| EF_ctx.lh.parsorbitalis            | volumechange_ctx.lh.parsorbitalis            |
+| EF_ctx.lh.parstriangularis         | volumechange_ctx.lh.parstriangularis         |
+| EF_ctx.lh.pericalcarine            | volumechange_ctx.lh.pericalcarine            |
+| EF_ctx.lh.postcentral              | volumechange_ctx.lh.postcentral              |
+| EF_ctx.lh.posteriorcingulate       | volumechange_ctx.lh.posteriorcingulate       |
+| EF_ctx.lh.precentral               | volumechange_ctx.lh.precentral               |
+| EF_ctx.lh.precuneus                | volumechange_ctx.lh.precuneus                |
+| EF_ctx.lh.rostralanteriorcingulate | volumechange_ctx.lh.rostralanteriorcingulate |
+| EF_ctx.lh.rostralmiddlefrontal     | volumechange_ctx.lh.rostralmiddlefrontal     |
+| EF_ctx.lh.superiorfrontal          | volumechange_ctx.lh.superiorfrontal          |
+| EF_ctx.lh.superiorparietal         | volumechange_ctx.lh.superiorparietal         |
+| EF_ctx.lh.superiortemporal         | volumechange_ctx.lh.superiortemporal         |
+| EF_ctx.lh.supramarginal            | volumechange_ctx.lh.supramarginal            |
+| EF_ctx.lh.frontalpole              | volumechange_ctx.lh.frontalpole              |
+| EF_ctx.lh.temporalpole             | volumechange_ctx.lh.temporalpole             |
+| EF_ctx.lh.transversetemporal       | volumechange_ctx.lh.transversetemporal       |
+| EF_ctx.rh.bankssts                 | volumechange_ctx.rh.bankssts                 |
+| EF_ctx.rh.caudalanteriorcingulate  | volumechange_ctx.rh.caudalanteriorcingulate  |
+| EF_ctx.rh.caudalmiddlefrontal      | volumechange_ctx.rh.caudalmiddlefrontal      |
+| EF_ctx.rh.cuneus                   | volumechange_ctx.rh.cuneus                   |
+| EF_ctx.rh.entorhinal               | volumechange_ctx.rh.entorhinal               |
+| EF_ctx.rh.fusiform                 | volumechange_ctx.rh.fusiform                 |
+| EF_ctx.rh.inferiorparietal         | volumechange_ctx.rh.inferiorparietal         |
+| EF_ctx.rh.inferiortemporal         | volumechange_ctx.rh.inferiortemporal         |
+| EF_ctx.rh.isthmuscingulate         | volumechange_ctx.rh.isthmuscingulate         |
+| EF_ctx.rh.lateraloccipital         | volumechange_ctx.rh.lateraloccipital         |
+| EF_ctx.rh.lateralorbitofrontal     | volumechange_ctx.rh.lateralorbitofrontal     |
+| EF_ctx.rh.lingual                  | volumechange_ctx.rh.lingual                  |
+| EF_ctx.rh.medialorbitofrontal      | volumechange_ctx.rh.medialorbitofrontal      |
+| EF_ctx.rh.middletemporal           | volumechange_ctx.rh.middletemporal           |
+| EF_ctx.rh.parahippocampal          | volumechange_ctx.rh.parahippocampal          |
+| EF_ctx.rh.paracentral              | volumechange_ctx.rh.paracentral              |
+| EF_ctx.rh.parsopercularis          | volumechange_ctx.rh.parsopercularis          |
+| EF_ctx.rh.parsorbitalis            | volumechange_ctx.rh.parsorbitalis            |
+| EF_ctx.rh.parstriangularis         | volumechange_ctx.rh.parstriangularis         |
+| EF_ctx.rh.pericalcarine            | volumechange_ctx.rh.pericalcarine            |
+| EF_ctx.rh.postcentral              | volumechange_ctx.rh.postcentral              |
+| EF_ctx.rh.posteriorcingulate       | volumechange_ctx.rh.posteriorcingulate       |
+| EF_ctx.rh.precentral               | volumechange_ctx.rh.precentral               |
+| EF_ctx.rh.precuneus                | volumechange_ctx.rh.precuneus                |
+| EF_ctx.rh.rostralanteriorcingulate | volumechange_ctx.rh.rostralanteriorcingulate |
+| EF_ctx.rh.rostralmiddlefrontal     | volumechange_ctx.rh.rostralmiddlefrontal     |
+| EF_ctx.rh.superiorfrontal          | volumechange_ctx.rh.superiorfrontal          |
+| EF_ctx.rh.superiorparietal         | volumechange_ctx.rh.superiorparietal         |
+| EF_ctx.rh.superiortemporal         | volumechange_ctx.rh.superiortemporal         |
+| EF_ctx.rh.supramarginal            | volumechange_ctx.rh.supramarginal            |
+| EF_ctx.rh.frontalpole              | volumechange_ctx.rh.frontalpole              |
+| EF_ctx.rh.temporalpole             | volumechange_ctx.rh.temporalpole             |
+| EF_ctx.rh.transversetemporal       | volumechange_ctx.rh.transversetemporal       |
+I have checked results without obvious two outliers, but no difference. 
+#r/o EM and ZV outliers
+#ind.fd<-which(fd$madrs_hdrs_percentage_cahnge> (-0.25)) 
+**** Calculating \Delta Volume ~ EF + Age + ECTnumber
+#+BEGIN_SRC R :session ECTanal
+  myres1v3<-matrix(NA,length(myroi.names),6)
+  for (i in 1:dim(varnames)[1])
+  {
+   ef<-fd[ind.fd,grep(varnames[i,1],colnames(fd))]
+   dvol<-fd[ind.fd,grep(varnames[i,2],colnames(fd))]
+   lm.1<-lm(dvol~ef+Age.1+rul_number.1,data=fd[ind.fd,])
+   res<-summary(lm.1)
+   myres1v3[i,1]<-res$coefficients[2,3]
+   myres1v3[i,2]<-res$coefficients[2,4]
+   myres1v3[i,3]<-res$coefficients[3,3]
+   myres1v3[i,4]<-res$coefficients[3,4]
+   myres1v3[i,5]<-res$coefficients[4,3]
+   myres1v3[i,6]<-res$coefficients[4,4]
+  }
+
+  kiir<-data.frame(myroi.names,myres1v3)
+  colnames(kiir)<-c('roi','tef','pef','tAge','pAge','tECTnum','pECTnum')
+  write.csv(kiir, '/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/N156_Vol-EF+Age+ECTnum.csv')
+
+  mytable<-data.frame(myroi.names,myres1v3)
+  fdr<-p.adjust(myres1v3[,2],method = 'fdr')#Benjamini & Hochberg 1995 FDR
+  #by<-p.adjust(myres1v3[,2],method = 'fdr')#Benjamini & Yekutieli 2001 FDR
+  holm<-p.adjust(myres1v3[,2],method = 'holm')#Holm 1979 very strict FWE
+  fdr.res<-data.frame(mytable, fdr, holm)
+
+  colnames(fdr.res)<-c('roi','t_EF','p_EF','t_Age','p_Age','t_ECTnum','p_ECTnum','BH^EF_FDR','Holm^EF_FWE')
+  write.csv(fdr.res, '/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/N151_dVol-EF+Age+ECTnum_FDRcorrect.csv')
+
+#+END_SRC
+
+#+RESULTS:
 **** Calculating \Delta Volume ~ EF + Age + ECTnumber + Site
 #+BEGIN_SRC R :session ECTanal
   myres1v3.s<-matrix(NA,length(myroi.names),6)
@@ -181,6 +426,106 @@ I have checked results without obvious two outliers, but no difference.
 #+END_SRC
 
 #+RESULTS:
+**** Calculating mixed effect \Delta Volume ~ EF + Age + ECTnumber + Site
+#+BEGIN_SRC R :session ECTanal
+  library(nlme)
+  myres1v3.s<-matrix(NA,length(myroi.names),6)
+  for (i in 1:dim(varnames)[1])
+  {
+   ef<-fd[ind.fd,grep(varnames[i,1],colnames(fd))]
+   dvol<-fd[ind.fd,grep(varnames[i,2],colnames(fd))]
+   #lm.1<-lm(dvol~ef+Age.1+rul_number.1+Site.1,data=fd[ind.fd,])
+   lm.1<-lme(dvol~ef+Age.1+rul_number.1,data=fd[ind.fd,],random = ~1|Site.1, na.action = na.omit)
+   res<-summary(lm.1)
+   myres1v3.s[i,1]<-res$tTable[2,4]
+   myres1v3.s[i,2]<-res$tTable[2,5]
+   myres1v3.s[i,3]<-res$tTable[3,4]
+   myres1v3.s[i,4]<-res$tTable[3,5]
+   myres1v3.s[i,5]<-res$tTable[4,4]
+   myres1v3.s[i,6]<-res$tTable[4,5]
+  }
+
+  kiir<-data.frame(myroi.names,myres1v3.s)
+  colnames(kiir)<-c('roi','tef','pef','tAge','pAge','tECTnum','pECTnum')
+  write.csv(kiir, '/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/Mixed_N156_Vol-EF+Age+ECTnum+Site.csv')
+
+  mytable<-data.frame(myroi.names,myres1v3.s)
+  fdr<-p.adjust(myres1v3.s[,2],method = 'fdr')#Benjamini & Hochberg 1995 FDR
+  #by<-p.adjust(myres1v3[,2],method = 'fdr')#Benjamini & Yekutieli 2001 FDR
+  holm<-p.adjust(myres1v3.s[,2],method = 'holm')#Holm 1979 very strict FWE
+  fdr.res<-data.frame(mytable, fdr, holm)
+
+  colnames(fdr.res)<-c('roi','t_EF','p_EF','t_Age','p_Age','t_ECTnum','p_ECTnum','BH^EF_FDR','Holm^EF_FWE')
+  write.csv(fdr.res, '/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/Mixed_N151_dVol-EF+Age+ECTnum+Site_FDRcorrect.csv')
+  #write.csv(fdr.res, '/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/IQR_Mixed_N151_dVol-EF+Age+ECTnum+Site_FDRcorrect.csv')
+#+END_SRC
+
+#+RESULTS:
+**** Calculating mixed effect \Delta Volume ~ EF + Age + ECTnumber + Site + medication
+#+BEGIN_SRC R :session ECTanal
+  library(nlme)
+  myres1v3.s<-matrix(NA,length(myroi.names),6)
+  for (i in 1:dim(varnames)[1])
+  {
+   fd$medication<-NA
+   fd$medication[med.free]<-0
+   fd$medication[under.med]<-1
+   fd$medication<-factor(fd$medication)
+   ef<-fd[ind.fd,grep(varnames[i,1],colnames(fd))]
+   dvol<-fd[ind.fd,grep(varnames[i,2],colnames(fd))]
+   #lm.1<-lm(dvol~ef+Age.1+rul_number.1+Site.1,data=fd[ind.fd,])
+   lm.1<-lme(dvol~ef+Age.1+rul_number.1,data=fd[ind.fd,],random = ~1|Site.1/medication, na.action = na.omit)
+   res<-summary(lm.1)
+   myres1v3.s[i,1]<-res$tTable[2,4]
+   myres1v3.s[i,2]<-res$tTable[2,5]
+   myres1v3.s[i,3]<-res$tTable[3,4]
+   myres1v3.s[i,4]<-res$tTable[3,5]
+   myres1v3.s[i,5]<-res$tTable[4,4]
+   myres1v3.s[i,6]<-res$tTable[4,5]
+  }
+
+  kiir<-data.frame(myroi.names,myres1v3.s)
+  colnames(kiir)<-c('roi','tef','pef','tAge','pAge','tECTnum','pECTnum')
+  write.csv(kiir, '/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/Mixed_N156_Vol-EF+Age+ECTnum+Site+Med.csv')
+
+  mytable<-data.frame(myroi.names,myres1v3.s)
+  fdr<-p.adjust(myres1v3.s[,2],method = 'fdr')#Benjamini & Hochberg 1995 FDR
+  #by<-p.adjust(myres1v3[,2],method = 'fdr')#Benjamini & Yekutieli 2001 FDR
+  holm<-p.adjust(myres1v3.s[,2],method = 'holm')#Holm 1979 very strict FWE
+  fdr.res<-data.frame(mytable, fdr, holm)
+
+  colnames(fdr.res)<-c('roi','t_EF','p_EF','t_Age','p_Age','t_ECTnum','p_ECTnum','BH^EF_FDR','Holm^EF_FWE')
+  write.csv(fdr.res, '/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/Mixed_N151_dVol-EF+Age+ECTnum+Site+Med_FDRcorrect.csv')
+
+#+END_SRC
+
+#+RESULTS: 
+**** Calculating \Delta MADRS ~ \Delta Volume + Age + ECTnum
+#+BEGIN_SRC R :session ECTanal
+myres2v3<-matrix(NA,length(myroi.names),6)
+for (i in 1:dim(varnames)[1])
+{
+  ef<-fd[ind.fd,grep(varnames[i,1],colnames(fd))]
+  dvol<-fd[ind.fd,grep(varnames[i,2],colnames(fd))]
+  lm.1<-lm(madrs_hdrs_percentage_cahnge~dvol+Age.1+rul_number.1,data=fd[ind.fd,])
+  #lm.1<-lm(madrs_hdrs_percentage_cahnge~ef,data=fd[ind.fd,])
+  res<-summary(lm.1)
+  myres2v3[i,1]<-res$coefficients[2,3]
+  myres2v3[i,2]<-res$coefficients[2,4]
+  myres2v3[i,3]<-res$coefficients[3,3]
+  myres2v3[i,4]<-res$coefficients[3,4]
+  myres2v3[i,5]<-res$coefficients[4,3]
+  myres2v3[i,6]<-res$coefficients[4,4]
+}
+kiir<-data.frame(myroi.names,myres2v3)
+colnames(kiir)<-c('roi','tvol','pvol','tAge','pAge','tECTnum','pECTnum')
+write.csv(kiir, '/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/N156_dMADRSperc-dVol+Age+ECTnum.csv')
+
+#does not need to do FDR (unfortunatelly)
+
+#+END_SRC
+#+RESULTS:
+We did not expect too much here given Oltedal et al. 2018.
 
 **** Calculating \Delta MADRS ~ \Delta Volume + Age + ECTnum + Site
 #+BEGIN_SRC R :session ECTanal
@@ -209,6 +554,91 @@ write.csv(kiir, '/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_c
 #+RESULTS:
 We did not expect too much here given Oltedal et al. 2018.
 
+**** Calculating mixed effect \Delta MADRS ~ \Delta Volume + Age + ECTnum + Site
+#+BEGIN_SRC R :session ECTanal
+  myres2v3.s<-matrix(NA,length(myroi.names),6)
+  for (i in 1:dim(varnames)[1])
+  {
+    ef<-fd[ind.fd,grep(varnames[i,1],colnames(fd))]
+    dvol<-fd[ind.fd,grep(varnames[i,2],colnames(fd))]
+    #lm.1<-lm(madrs_hdrs_percentage_cahnge~dvol+Age.1+rul_number.1+Site.1,data=fd[ind.fd,])
+    lm.1<-lme(madrs_hdrs_percentage_cahnge~dvol+Age.1+rul_number.1,data=fd[ind.fd,],random=~1|Site.1, na.action=na.omit)
+    #lm.1<-lm(madrs_hdrs_percentage_cahnge~ef,data=fd[ind.fd,])
+    res<-summary(lm.1)
+    myres2v3.s[i,1]<-res$tTable[2,4]
+    myres2v3.s[i,2]<-res$tTable[2,5]
+    myres2v3.s[i,3]<-res$tTable[3,4]
+    myres2v3.s[i,4]<-res$tTable[3,5]
+    myres2v3.s[i,5]<-res$tTable[4,4]
+    myres2v3.s[i,6]<-res$tTable[4,5]
+  }
+  kiir<-data.frame(myroi.names,myres2v3.s)
+  colnames(kiir)<-c('roi','tvol','pvol','tAge','pAge','tECTnum','pECTnum')
+  write.csv(kiir, '/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/Mixed_N156_dMADRSperc-dVol+Age+ECTnum+Site.csv')
+
+  #does not need to do FDR (unfortunatelly)
+
+#+END_SRC
+#+RESULTS:
+We did not expect too much here given Oltedal et al. 2018.
+
+**** Calculating mixed effect \Delta MADRS ~ \Delta Volume + Age + ECTnum + Site + medication
+#+BEGIN_SRC R :session ECTanal
+  library(nlme)
+  myres2v3.s<-matrix(NA,length(myroi.names),6)
+  for (i in 1:dim(varnames)[1])
+  {
+    ef<-fd[ind.fd,grep(varnames[i,1],colnames(fd))]
+    dvol<-fd[ind.fd,grep(varnames[i,2],colnames(fd))]
+    #lm.1<-lm(madrs_hdrs_percentage_cahnge~dvol+Age.1+rul_number.1+Site.1,data=fd[ind.fd,])
+    lm.1<-lme(madrs_hdrs_percentage_cahnge~dvol+Age.1+rul_number.1,data=fd[ind.fd,],random=~1|Site.1/medication, na.action=na.omit)
+    #lm.1<-lm(madrs_hdrs_percentage_cahnge~ef,data=fd[ind.fd,])
+    res<-summary(lm.1)
+    myres2v3.s[i,1]<-res$tTable[2,4]
+    myres2v3.s[i,2]<-res$tTable[2,5]
+    myres2v3.s[i,3]<-res$tTable[3,4]
+    myres2v3.s[i,4]<-res$tTable[3,5]
+    myres2v3.s[i,5]<-res$tTable[4,4]
+    myres2v3.s[i,6]<-res$tTable[4,5]
+  }
+  kiir<-data.frame(myroi.names,myres2v3.s)
+  colnames(kiir)<-c('roi','tvol','pvol','tAge','pAge','tECTnum','pECTnum')
+  write.csv(kiir, '/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/Mixed_N156_dMADRSperc-dVol+Age+ECTnum+Site+Med.csv')
+
+  #does not need to do FDR (unfortunatelly)
+
+#+END_SRC
+#+RESULTS:
+We did not expect too much here given Oltedal et al. 2018.
+
+**** Calculating \Delta MADRS ~ EF + Age + ECTnumber
+#+BEGIN_SRC R :session ECTanal
+myres3v3<-matrix(NA,length(myroi.names),6)
+for (i in 1:dim(varnames)[1])
+{
+  ef<-fd[ind.fd,grep(varnames[i,1],colnames(fd))]
+  dvol<-fd[ind.fd,grep(varnames[i,2],colnames(fd))]
+  lm.1<-lm(madrs_hdrs_percentage_cahnge~ef+Age.1+rul_number.1,data=fd[ind.fd,])
+  #lm.1<-lm(madrs_hdrs_percentage_cahnge~ef,data=fd[ind.fd,])
+  res<-summary(lm.1)
+  myres3v3[i,1]<-res$coefficients[2,3]
+  myres3v3[i,2]<-res$coefficients[2,4]
+  myres3v3[i,3]<-res$coefficients[3,3]
+  myres3v3[i,4]<-res$coefficients[3,4]
+  myres3v3[i,5]<-res$coefficients[4,3]
+  myres3v3[i,6]<-res$coefficients[4,4]
+}
+kiir<-data.frame(myroi.names,myres3v3)
+colnames(kiir)<-c('roi','tef','pef','tAge','pAge','tECTnum','pECTnum')
+write.csv(kiir, '/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/N156_dMADRS-EF+Age+ECTnum.csv')
+
+#does not need to do FDR (unfortunatelly)
+#+END_SRC
+
+#+RESULTS:
+Interestingly no results here either. I did the whole analysis with
+BaselineTotalBrain volume as control for confound, very similar results. (as
+expected since age correlates with TotBrainVolume pretty much)
 **** Calculating \Delta MADRS ~ EF + Age + ECTnumber + Site
 #+BEGIN_SRC R :session ECTanal
 myres3v3.s<-matrix(NA,length(myroi.names),6)
@@ -231,6 +661,100 @@ colnames(kiir)<-c('roi','tef','pef','tAge','pAge','tECTnum','pECTnum')
 write.csv(kiir, '/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/N156_dMADRS-EF+Age+ECTnum+Site.csv')
 
 #does not need to do FDR (unfortunatelly)
+#+END_SRC
+
+#+RESULTS:
+Interestingly no results here either. I did the whole analysis with
+BaselineTotalBrain volume as control for confound, very similar results. (as
+expected since age correlates with TotBrainVolume pretty much)
+**** Calculating mixed effect \Delta MADRS ~ EF + Age + ECTnumber + Site
+#+BEGIN_SRC R :session ECTanal
+  myres3v3.s<-matrix(NA,length(myroi.names),6)
+  for (i in 1:dim(varnames)[1])
+  {
+    ef<-fd[ind.fd,grep(varnames[i,1],colnames(fd))]
+    dvol<-fd[ind.fd,grep(varnames[i,2],colnames(fd))]
+    #lm.1<-lm(madrs_hdrs_percentage_cahnge~ef+Age.1+rul_number.1+Site.1,data=fd[ind.fd,])
+    lm.1<-lme(madrs_hdrs_percentage_cahnge~ef+Age.1+rul_number.1,data=fd[ind.fd,],random = ~1|Site.1, na.action = na.omit)
+    #lm.1<-lm(madrs_hdrs_percentage_cahnge~ef,data=fd[ind.fd,])
+    res<-summary(lm.1)
+    myres3v3.s[i,1]<-res$tTable[2,4]
+    myres3v3.s[i,2]<-res$tTable[2,5]
+    myres3v3.s[i,3]<-res$tTable[3,4]
+    myres3v3.s[i,4]<-res$tTable[3,5]
+    myres3v3.s[i,5]<-res$tTable[4,4]
+    myres3v3.s[i,6]<-res$tTable[4,5]
+  }
+  kiir<-data.frame(myroi.names,myres3v3.s)
+  colnames(kiir)<-c('roi','tef','pef','tAge','pAge','tECTnum','pECTnum')
+  write.csv(kiir, '/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/Mixed_N156_dMADRS-EF+Age+ECTnum+Site.csv')
+
+  #does not need to do FDR (unfortunatelly)
+#+END_SRC
+
+#+RESULTS:
+Interestingly no results here either. I did the whole analysis with
+BaselineTotalBrain volume as control for confound, very similar results. (as
+expected since age correlates with TotBrainVolume pretty much)
+**** Calculating mixed effect \Delta MADRS ~ EF + Age + ECTnumber + Site + medication
+#+BEGIN_SRC R :session ECTanal
+  myres3v3.s<-matrix(NA,length(myroi.names),6)
+  for (i in 1:dim(varnames)[1])
+  {
+    ef<-fd[ind.fd,grep(varnames[i,1],colnames(fd))]
+    dvol<-fd[ind.fd,grep(varnames[i,2],colnames(fd))]
+    #lm.1<-lm(madrs_hdrs_percentage_cahnge~ef+Age.1+rul_number.1+Site.1,data=fd[ind.fd,])
+    lm.1<-lme(madrs_hdrs_percentage_cahnge~ef+Age.1+rul_number.1,data=fd[ind.fd,],random = ~1|Site.1/medication, na.action = na.omit)
+    #lm.1<-lm(madrs_hdrs_percentage_cahnge~ef,data=fd[ind.fd,])
+    res<-summary(lm.1)
+    myres3v3.s[i,1]<-res$tTable[2,4]
+    myres3v3.s[i,2]<-res$tTable[2,5]
+    myres3v3.s[i,3]<-res$tTable[3,4]
+    myres3v3.s[i,4]<-res$tTable[3,5]
+    myres3v3.s[i,5]<-res$tTable[4,4]
+    myres3v3.s[i,6]<-res$tTable[4,5]
+  }
+  kiir<-data.frame(myroi.names,myres3v3.s)
+  colnames(kiir)<-c('roi','tef','pef','tAge','pAge','tECTnum','pECTnum')
+  write.csv(kiir, '/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/Mixed_N156_dMADRS-EF+Age+ECTnum+Site+Med.csv')
+
+  #does not need to do FDR (unfortunatelly)
+#+END_SRC
+
+#+RESULTS:
+Interestingly no results here either. I did the whole analysis with
+BaselineTotalBrain volume as control for confound, very similar results. (as
+expected since age correlates with TotBrainVolume pretty much)
+**** Calculating \Delta MADRS ~ EF
+#+BEGIN_SRC R :session ECTanal
+  nc.myres3v3<-matrix(NA,length(myroi.names),2)
+  for (i in 1:dim(varnames)[1])
+  {
+    ef<-fd[ind.fd,grep(varnames[i,1],colnames(fd))]
+    dvol<-fd[ind.fd,grep(varnames[i,2],colnames(fd))]
+    lm.1<-lm(madrs_hdrs_percentage_cahnge~ef+rul_number.1+Site.1,data=fd[ind.fd,])
+    #lm.1<-lm(madrs_hdrs_percentage_cahnge~ef,data=fd[ind.fd,])
+    res<-summary(lm.1)
+    nc.myres3v3[i,1]<-res$coefficients[2,3]
+    nc.myres3v3[i,2]<-res$coefficients[2,4]
+    #nc.myres3v3[i,3]<-res$coefficients[3,3]
+    #nc.myres3v3[i,4]<-res$coefficients[3,4]
+    #nc.myres3v3[i,5]<-res$coefficients[4,3]
+    #nc.myres3v3[i,6]<-res$coefficients[4,4]
+  }
+  kiir<-data.frame(myroi.names,nc.myres3v3)
+  colnames(kiir)<-c('roi','tef','pef')
+  write.csv(kiir, '/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/N156_dMADRS-EF.csv')
+
+
+    mytable<-data.frame(myroi.names,nc.myres3v3)
+    fdr<-p.adjust(nc.myres3v3[,2],method = 'fdr')#Benjamini & Hochberg 1995 FDR
+    #by<-p.adjust(myres1v3[,2],method = 'fdr')#Benjamini & Yekutieli 2001 FDR
+    holm<-p.adjust(nc.myres3v3[,2],method = 'holm')#Holm 1979 very strict FWE
+    fdr.res<-data.frame(mytable, fdr, holm)
+
+    colnames(fdr.res)<-c('roi','t_EF','p_EF','BH^EF_FDR','Holm^EF_FWE')
+  write.csv(fdr.res, '/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/N156_dMADRS-EFwFDR.csv')
 #+END_SRC
 
 #+RESULTS:
@@ -266,7 +790,35 @@ expected since age correlates with TotBrainVolume pretty much)
 Interestingly no results here either. I did the whole analysis with
 BaselineTotalBrain volume as control for confound, very similar results. (as
 expected since age correlates with TotBrainVolume pretty much)
+**** Calculating mixed effect \Delta MADRS ~ EF * \Delta Volume + Age + ECTnumber + Site
+#+BEGIN_SRC R :session ECTanal
+  myres3v3.si<-matrix(NA,length(myroi.names),6)
+  for (i in 1:dim(varnames)[1])
+  {
+    ef<-fd[ind.fd,grep(varnames[i,1],colnames(fd))]
+    dvol<-fd[ind.fd,grep(varnames[i,2],colnames(fd))]
+    #lm.1<-lm(madrs_hdrs_percentage_cahnge~ef*dvol+Age.1+rul_number.1+Site.1,data=fd[ind.fd,])
+    lm.1<-lme(madrs_hdrs_percentage_cahnge~ef*dvol+Age.1+rul_number.1,data=fd[ind.fd,], random=~1|Site.1, na.action=na.omit)
+    #lm.1<-lm(madrs_hdrs_percentage_cahnge~ef,data=fd[ind.fd,])
+    res<-summary(lm.1)
+    myres3v3.si[i,1]<-res$tTable[2,4]
+    myres3v3.si[i,2]<-res$tTable[2,5]
+    myres3v3.si[i,3]<-res$tTable[3,4]
+    myres3v3.si[i,4]<-res$tTable[3,5]
+    myres3v3.si[i,5]<-res$tTable[6,4]
+    myres3v3.si[i,6]<-res$tTable[6,5]
+  }
+  kiir<-data.frame(myroi.names,myres3v3.si)
+  colnames(kiir)<-c('roi','tef','pef','tdVol','pdVol','tINT','pINT')
+  write.csv(kiir, '/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/Mixed_N156_dMADRS-EFmuldVOL+Age+ECTnum+Site.csv')
 
+  #does not need to do FDR (unfortunatelly)
+#+END_SRC
+
+#+RESULTS:
+Interestingly no results here either. I did the whole analysis with
+BaselineTotalBrain volume as control for confound, very similar results. (as
+expected since age correlates with TotBrainVolume pretty much)
 **** Calculating volumetric changes: one sample t-test
 #+BEGIN_SRC R :session ECTanal
 #volumetric changes
@@ -292,7 +844,6 @@ write.csv(kiir, '/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_c
 #+END_SRC
 
 #+RESULTS:
-
 **** Calculating pairwise volumetric changes between R and L and Figure between R and L
 #+BEGIN_SRC R :session ECTanal
    myres5v3<-matrix(NA,floor(length(myroi.names)/2),6)
@@ -410,7 +961,6 @@ write.csv(kiir, '/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_c
 #+END_SRC
 
 #+RESULTS:
-
 **** Calculating and writing out nii.gz images for showing 42 pairs of ROI representation of data
 #+BEGIN_SRC R :session ECTanal
 library(oro.nifti)
@@ -447,7 +997,6 @@ writenii(nim = lat.dVOL, '/nethome/amiklos/work/ECT/Bergen/N156_LATER_INDEX_dVOL
 
 
 #+END_SRC
-
 **** Calculating simple correlation between meanEF and d \Delta Volume across regions
 #+BEGIN_SRC R :session ECTanal
   myres8v3<-matrix(NA,length(myroi.names),4)
@@ -495,7 +1044,6 @@ writenii(nim = lat.dVOL, '/nethome/amiklos/work/ECT/Bergen/N156_LATER_INDEX_dVOL
 #+END_SRC
 
 #+RESULTS:
-
 **** Calculating and writing out nii images across 85 ROIs
 #+BEGIN_SRC R :session ECTanal
 library(oro.nifti)
@@ -539,11 +1087,8 @@ writenii(nim = meanEF, '/nethome/amiklos/work/ECT/Bergen/N156_meanVOLch_regions.
 
 
 #+END_SRC
-
 *** Create Figures
-
 **** Figures with ROIs
-
 ***** Volume and EF comparision figure, plus adding correlations and boxplot BIG
  #+BEGIN_SRC sh
  cd /nethome/amiklos/work/ECT/Bergen
@@ -567,7 +1112,6 @@ writenii(nim = meanEF, '/nethome/amiklos/work/ECT/Bergen/N156_meanVOLch_regions.
   #+END_SRC
 
   #+RESULTS:
-
 ***** Volume and EF comparision figure, plus adding correlations and boxplot SMALL
  #+BEGIN_SRC sh
  cd /nethome/amiklos/work/ECT/Bergen
@@ -630,7 +1174,6 @@ writenii(nim = meanEF, '/nethome/amiklos/work/ECT/Bergen/N156_meanVOLch_regions.
  #+RESULTS:
 
 **** Figures for individual variability
-
 ***** Calculating the individual relationships in Hippocampus
 #+BEGIN_SRC R :session ECTanal
     # missing hippocampus data in 4 patients imputed here with mean, missing from
@@ -788,9 +1331,7 @@ writenii(nim = meanEF, '/nethome/amiklos/work/ECT/Bergen/N156_meanVOLch_regions.
 
  #+RESULTS:
  : 1
-
-* Demographic Data and Statistics 
-
+* Demographic Data and Statistics :noexport:
 ** Sample Size
 #+BEGIN_SRC R :session ECTanal :exports none :results values drawer
 mean.age<-mean(fd$Age.1[ind.fd])
@@ -812,9 +1353,7 @@ paste0(Nres,'\n',  meanres, '\n', sdres, '\n', femres)
 #+MACRO: fem 94
 :END:
 We analyzed N = {{{N}}}({{{fem}}}F); Age: {{{ma}}} +/- {{{sa}}}.
-
 ** Clinical Outcome
-
 *** Basic relationships
 #+BEGIN_SRC R :session ECTanal :exports none :results values drawer
   madrschange<-mean(fd$madrs_hdrs_percentage_cahnge[ind.fd])
@@ -851,7 +1390,6 @@ the end of the course of ECT MADRS was {{{MADRS3}}} (range:
 {{{r31}}}-{{{r32}}}). The average improvement was {{{mch}}} +/- {{{sdmch}}}%.
 
 *** Confounds
-
 **** Age and clinical response
 #+BEGIN_SRC R :session ECTanal :exports none :results values drawer
     res<-cor.test(fd$madrs_hdrs_percentage_cahnge[1:151],fd$Age.1[1:151])
@@ -906,7 +1444,6 @@ Age was correlating with total brain volume (t = {{{tot1}}}, df = {{{tot2}}}, r 
 {{{tot3}}}, p = {{{tot4}}}.
 
 ** Correlation statistics
-
 *** Correlation between EF and Volume across regions
 #+BEGIN_SRC R :session ECTanal :exports none :results values drawer
   res<-result.cor.meanEFdvol
@@ -1011,35 +1548,35 @@ p = {{{p_1}}}; df = {{{df_1}}}; t = {{{t_1}}}.
 | all           | 11.3538 | 300.0000 | 0.0000 | 0.5482                          |
 | left          | 4.0121  | 149.0000 | 0.0001 | 0.3122                          |
 | right         | 4.0207  | 149.0000 | 0.0001 | 0.3129                          |
-| paired-t-test | 13.5849 | 150.0000 | 0.0000 | 0.0287                   
+| paired-t-test | 13.5849 | 150.0000 | 0.0000 | 0.0287                          |
 
 * Figures
 
 #+CAPTION: Illustration of the methods. We have analyzed longitudinal structural MRI data from 151 individuals. We have calculated the volume change and the magnitude of  electrical field in 85 regions across the human cortex and subcortical structures.    
 #+NAME: fig:METHODS
-[[./Figures/Figure_Method.png]]
+[[/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/Figure_resources/Figure_Method.png]]
 
 #+CAPTION: Volume change across 85 brain regions. Upper panel first row: mean EF across 85 brain regions; second row: the effect size of volume changes between baseline and at the end of the course of ECT across 85 regions. Lower panel, left: As expected, effect sizes of right unilateral stimulations were consistently higher on the right side than on the left side. Lower panel, right: The scatter plot indicates strong correlation between regional EF a regional volume change (r = {{{r}}}; p = {{{p}}}; df = {{{df}}}; t = {{{t}}}.  
 #+NAME: fig:VOL-CHANGE_85ROI
-[[./Figures/Figure_small_ROI_based_volume_change.png]]
+[[/nethome/amiklos/work/ECT/Bergen/Figure_small_ROI_based_volume_change.png]]
 
 #+CAPTION: Laterality Indices of EF (upper) and Volume change (lower): effect size of the paired wise difference across regions. Lower panel indicates the correlation among the laterality indices of EF and volume changes (r = {{{r_1}}}; p = {{{p_1}}}; df = {{{df_1}}}; t = {{{t_1}}}). The correlation indicates that the more the EF lateralized, the more the corresponding volume change as well.    
 #+NAME: fig:LAT-IND_42ROI
-[[./Figures/Figure_LatInd_42ROI.png]]
+[[/nethome/amiklos/work/ECT/Bergen/Figure_LatInd_42ROI.png]]
 
 
-#+CAPTION: Individual specific relationship between EF and volume change in the hippocampus. The left panel indicates that there is a strong dose dependent relationship between EF and volume change in the hippocampus (t = src_R[:eval q :var t=table-hippocampus[2,1]]{t}, df = src_R[:eval q :var df=table-hippocampus[2,2]]{df}, r = src_R[:eval q :var r=table-hippocampus[2,4]]{r}, p = src_R[:eval q :var mp=table-hippocampus[2,3]]{mp} ). The left side (orange dots) has a very robust relationship (t = src_R[:eval q :var t=table-hippocampus[3,1]]{t}, df = src_R[:eval q :var df=table-hippocampus[3,2]]{df}, r = src_R[:eval q :var r=table-hippocampus[3,4]]{r}, p = src_R[:eval q :var mp=table-hippocampus[3,3]]{mp}) , and event though this relationship on the right side is not significant (probably due to ceiling effect) (t = src_R[:eval q :var t=table-hippocampus[4,1]]{t}, df = src_R[:eval q :var df=table-hippocampus[4,2]]{df}, r = src_R[:eval q :var r=table-hippocampus[4,4]]{r}, p = src_R[:eval q :var mp=table-hippocampus[4,3]]{mp})  it scales nicely with the left sided values. The right panel shows the volume changes in the corresponding individuals in both hemispheres (t = src_R[:eval q :var t=table-hippocampus[5,1]]{t}, df = src_R[:eval q :var df=table-hippocampus[5,2]]{df}, mean difference = src_R[:eval q :var r=table-hippocampus[5,4]]{r}, p = src_R[:eval q :var mp=table-hippocampus[5,3]]{mp} . 
+#+CAPTION: Individual specific relationship beteween EF and volume change in the hippocampus. The left panel indicates that there is a strong dose dependent relationship between EF and volume change in the hippocampus (t = src_R[:eval q :var t=table-hippocampus[2,1]]{t}, df = src_R[:eval q :var df=table-hippocampus[2,2]]{df}, r = src_R[:eval q :var r=table-hippocampus[2,4]]{r}, p = src_R[:eval q :var mp=table-hippocampus[2,3]]{mp} ). The left side (orange dots) has a very robust relationship (t = src_R[:eval q :var t=table-hippocampus[3,1]]{t}, df = src_R[:eval q :var df=table-hippocampus[3,2]]{df}, r = src_R[:eval q :var r=table-hippocampus[3,4]]{r}, p = src_R[:eval q :var mp=table-hippocampus[3,3]]{mp}) , and event though this relationship on the right side is not significant (probably due to ceiling effect) (t = src_R[:eval q :var t=table-hippocampus[4,1]]{t}, df = src_R[:eval q :var df=table-hippocampus[4,2]]{df}, r = src_R[:eval q :var r=table-hippocampus[4,4]]{r}, p = src_R[:eval q :var mp=table-hippocampus[4,3]]{mp})  it scales nicely with the left sided values. The right panel shows the volume changes in the corresponding individuals in both hemispheres (t = src_R[:eval q :var t=table-hippocampus[5,1]]{t}, df = src_R[:eval q :var df=table-hippocampus[5,2]]{df}, mean difference = src_R[:eval q :var r=table-hippocampus[5,4]]{r}, p = src_R[:eval q :var mp=table-hippocampus[5,3]]{mp} . 
 #+NAME: fig:EFvVOLinHIPPOCAMPUS
-[[./Figures/v2-EF_v_Hippocampus.png]]
+[[/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/v2-EF_v_Hippocampus.png]]
 
-#+CAPTION: Individual specific relationship between EF and volume change in the amygdala. The left panel indicates that there is a strong dose dependent relationship between EF and volume change in the amygdala (t = src_R[:eval q :var t=table-amygdala[2,1]]{t}, df = src_R[:eval q :var df=table-amygdala[2,2]]{df}, r = src_R[:eval q :var r=table-amygdala[2,4]]{r}, p = src_R[:eval q :var mp=table-amygdala[2,3]]{mp} ). Both the left (orange dots) and right (blue dots) side has a very robust relationship (t = src_R[:eval q :var t=table-amygdala[3,1]]{t}, df = src_R[:eval q :var df=table-amygdala[3,2]]{df}, r = src_R[:eval q :var r=table-amygdala[3,4]]{r}, p = src_R[:eval q :var mp=table-amygdala[3,3]]{mp}) and (t = src_R[:eval q :var t=table-amygdala[4,1]]{t}, df = src_R[:eval q :var df=table-amygdala[4,2]]{df}, r = src_R[:eval q :var r=table-amygdala[4,4]]{r}, p = src_R[:eval q :var mp=table-amygdala[4,3]]{mp}) respectively. The right panel shows the volume changes in the corresponding individuals in both hemispheres (t = src_R[:eval q :var t=table-amygdala[5,1]]{t}, df = src_R[:eval q :var df=table-amygdala[5,2]]{df}, mean difference = src_R[:eval q :var r=table-amygdala[5,4]]{r}, p = src_R[:eval q :var mp=table-amygdala[5,3]]{mp} . 
+#+CAPTION: Individual specific relationship beteween EF and volume change in the amygdala. The left panel indicates that there is a strong dose dependent relationship between EF and volume change in the amygdala (t = src_R[:eval q :var t=table-amygdala[2,1]]{t}, df = src_R[:eval q :var df=table-amygdala[2,2]]{df}, r = src_R[:eval q :var r=table-amygdala[2,4]]{r}, p = src_R[:eval q :var mp=table-amygdala[2,3]]{mp} ). Both the left (orange dots) and right (blue dots) side has a very robust relationship (t = src_R[:eval q :var t=table-amygdala[3,1]]{t}, df = src_R[:eval q :var df=table-amygdala[3,2]]{df}, r = src_R[:eval q :var r=table-amygdala[3,4]]{r}, p = src_R[:eval q :var mp=table-amygdala[3,3]]{mp}) and (t = src_R[:eval q :var t=table-amygdala[4,1]]{t}, df = src_R[:eval q :var df=table-amygdala[4,2]]{df}, r = src_R[:eval q :var r=table-amygdala[4,4]]{r}, p = src_R[:eval q :var mp=table-amygdala[4,3]]{mp}) respectively. The right panel shows the volume changes in the corresponding individuals in both hemispheres (t = src_R[:eval q :var t=table-amygdala[5,1]]{t}, df = src_R[:eval q :var df=table-amygdala[5,2]]{df}, mean difference = src_R[:eval q :var r=table-amygdala[5,4]]{r}, p = src_R[:eval q :var mp=table-amygdala[5,3]]{mp} . 
 #+NAME: fig:EFvVOLinAmygdala
-[[./Figures/v2-EF_v_Amygdala.png]]
+[[/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/v2-EF_v_Amygdala.png]]
 
 * Supplementary Figures
-#+CAPTION: EF and Volume specificity. To test the specificity of our measures in the left amygdala and the left hippocampus (FDR corrected findings) we permutated the labels across the 85 ROIs. First in the volume changes (left panel) and then in the EF values (right panel) and calculated correlations between the  EF and volume change of these regions respectively. This way we received 85 different values, where one of them was the "correct" correlation, indicated with red dots. The correlations between the EF and corresponding volume outperformed the other correlations (were in the top 5 percentile) from non-matching pairs, indicating that our findings were not merely a general correlation with some average values across regions, further strengthening the casual link between EF and volume change.  
+#+CAPTION: EF and Volume specificity. To test the specificity of our measures in the bilateral amygdala and the left hippocampus (FDR corrected findings) we permutated the labels across the 85 ROIs. First in the volume changes (left panel) and then in the EF values (right panel) and calculated correlations between the  EF and volume change of these regions respectively. This way we received 85 different values, where one of them was the "correct" correlation, indicated with red dots. The correlations between the EF and corresponding volume outperformed the other correlations (were in the top 5 percentile) from non-matching pairs in most of the cases, indicating that our findings were not merely a general correlation with some average values across regions, further strengthening the casual link between EF and volume change.  
 #+NAME: fig:EF-VOL-spec-3ROI
-[[./Figures/EF-Volume-Specificity.png]]
+[[/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/EF-Volume-Specificity.png]]
 
 * Supplementary Tables
 ** Supplementary Table 1
@@ -1204,7 +1741,325 @@ print(mt.asc,type="org")
 | 42 | \Delta VOL^{R-L}_ctx.lh.transversetemporal       |  5.8831 | 0.0000 |  0.0090 |  0.4788 | 0.0000 |
 |    |                                                  |         |        |         |         |        |
 
-** Supplementary Table 3
+
+** Supplementary Table 3-without site                              :noexport:
+#+BEGIN_SRC R  :results output raw :exports results
+
+  library(ascii)
+  library(stringr)
+  mt<-read.csv('/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/N151_dVol-EF+Age+ECTnum_FDRcorrect.csv')[,c(2:5,7,9)]
+  mt$roi<-str_replace(mt$roi,'EF','\\\\Delta VOL')
+  colnames(mt)[6]<-'BH^EF_FDR'
+  mt.asc<-ascii(mt, colnames=colnames(mt),digits=4,
+               caption="The relationship between volume changes and EF across individuals (EF ~ \\Delta Vol + Age + ECTnum)")
+  print(mt.asc,type="org")
+
+#+END_SRC
+
+#+RESULTS:
+#+CAPTION: The relationship between volume changes and EF across individuals ( \Delta Vol ~ EF + Age + ECTnum)
+|    | roi                                        | t_EF    | p_EF   | t_Age   | t_ECTnum | BH^EF_FDR |
+|----+--------------------------------------------+---------+--------+---------+----------+-----------|
+| 1  | \Delta VOL_Left.Cerebellum.Cortex          | 0.1756  | 0.8609 | 1.0464  | 2.1542   | 0.9263    |
+| 2  | \Delta VOL_Left.Thalamus.Proper            | 0.2321  | 0.8168 | 0.8260  | 2.8326   | 0.8901    |
+| 3  | \Delta VOL_Left.Caudate                    | 0.7559  | 0.4509 | -0.5022 | 2.7269   | 0.6633    |
+| 4  | \Delta VOL_Left.Putamen                    | 0.5772  | 0.5647 | -0.3482 | 1.6085   | 0.7272    |
+| 5  | \Delta VOL_Left.Pallidum                   | 0.0921  | 0.9268 | 0.9235  | 1.4042   | 0.9491    |
+| 6  | \Delta VOL_Brain.Stem                      | 1.4237  | 0.1566 | 1.0471  | 1.3755   | 0.4035    |
+| 7  | \Delta VOL_Left.Hippocampus                | 4.7191  | 0.0000 | -3.0149 | 3.4190   | 0.0005    |
+| 8  | \Delta VOL_Left.Amygdala                   | 3.8939  | 0.0001 | -0.3270 | 1.9282   | 0.0042    |
+| 9  | \Delta VOL_Left.Accumbens.area             | 2.0238  | 0.0448 | -3.4456 | 1.7246   | 0.1899    |
+| 10 | \Delta VOL_Left.VentralDC                  | 0.0743  | 0.9409 | 0.5726  | 2.1980   | 0.9521    |
+| 11 | \Delta VOL_Right.Cerebellum.Cortex         | -0.5564 | 0.5788 | 0.0677  | 1.3212   | 0.7343    |
+| 12 | \Delta VOL_Right.Thalamus.Proper           | 0.1067  | 0.9152 | 1.8513  | 3.5792   | 0.9487    |
+| 13 | \Delta VOL_Right.Caudate                   | 1.2498  | 0.2134 | 1.5926  | 1.6008   | 0.4650    |
+| 14 | \Delta VOL_Right.Putamen                   | 1.1885  | 0.2366 | 0.0379  | 1.7233   | 0.4706    |
+| 15 | \Delta VOL_Right.Pallidum                  | 0.9091  | 0.3648 | 2.6442  | 2.9325   | 0.6218    |
+| 16 | \Delta VOL_Right.Hippocampus               | 2.0043  | 0.0469 | -1.0697 | 3.2904   | 0.1899    |
+| 17 | \Delta VOL_Right.Amygdala                  | 4.0799  | 0.0001 | 2.1354  | 4.1192   | 0.0031    |
+| 18 | \Delta VOL_Right.Accumbens.area            | 2.5525  | 0.0117 | -0.2108 | 3.6614   | 0.0966    |
+| 19 | \Delta VOL_Right.VentralDC                 | 0.2958  | 0.7678 | 0.6986  | 0.7433   | 0.8536    |
+| 20 | \Delta VOL_ctx.lh.bankssts                 | 1.2061  | 0.2297 | 2.0608  | 2.7927   | 0.4706    |
+| 21 | \Delta VOL_ctx.lh.caudalanteriorcingulate  | 1.5301  | 0.1281 | 1.8123  | 1.9654   | 0.3827    |
+| 22 | \Delta VOL_ctx.lh.caudalmiddlefrontal      | -1.4424 | 0.1513 | 1.7638  | 1.8303   | 0.4035    |
+| 23 | \Delta VOL_ctx.lh.cuneus                   | 0.9983  | 0.3198 | 0.1877  | 2.0399   | 0.5663    |
+| 24 | \Delta VOL_ctx.lh.entorhinal               | 3.2229  | 0.0016 | -1.2447 | 1.6659   | 0.0332    |
+| 25 | \Delta VOL_ctx.lh.fusiform                 | 2.9607  | 0.0036 | 1.0298  | 2.1238   | 0.0609    |
+| 26 | \Delta VOL_ctx.lh.inferiorparietal         | 1.7507  | 0.0821 | 3.2476  | 2.3424   | 0.2907    |
+| 27 | \Delta VOL_ctx.lh.inferiortemporal         | 2.5683  | 0.0112 | 2.0731  | 1.9766   | 0.0966    |
+| 28 | \Delta VOL_ctx.lh.isthmuscingulate         | 0.1456  | 0.8844 | 0.5500  | 2.9338   | 0.9300    |
+| 29 | \Delta VOL_ctx.lh.lateraloccipital         | 1.3650  | 0.1743 | 2.3120  | 1.1617   | 0.4315    |
+| 30 | \Delta VOL_ctx.lh.lateralorbitofrontal     | 1.4274  | 0.1556 | -0.0081 | 1.5758   | 0.4035    |
+| 31 | \Delta VOL_ctx.lh.lingual                  | 0.2886  | 0.7733 | 0.9764  | 2.4836   | 0.8536    |
+| 32 | \Delta VOL_ctx.lh.medialorbitofrontal      | 1.0744  | 0.2844 | -0.1246 | 1.1852   | 0.5246    |
+| 33 | \Delta VOL_ctx.lh.middletemporal           | 2.2463  | 0.0262 | 1.2792  | 2.2418   | 0.1483    |
+| 34 | \Delta VOL_ctx.lh.parahippocampal          | 1.5197  | 0.1307 | 1.2153  | 2.7839   | 0.3827    |
+| 35 | \Delta VOL_ctx.lh.paracentral              | -1.6080 | 0.1100 | 1.8077  | 4.0461   | 0.3595    |
+| 36 | \Delta VOL_ctx.lh.parsopercularis          | -0.7867 | 0.4327 | 1.0377  | 1.8485   | 0.6633    |
+| 37 | \Delta VOL_ctx.lh.parsorbitalis            | 0.7866  | 0.4328 | -0.5581 | 0.9230   | 0.6633    |
+| 38 | \Delta VOL_ctx.lh.parstriangularis         | 0.7271  | 0.4683 | -0.3211 | 2.7730   | 0.6747    |
+| 39 | \Delta VOL_ctx.lh.pericalcarine            | 0.4473  | 0.6553 | 0.1144  | 1.8018   | 0.7737    |
+| 40 | \Delta VOL_ctx.lh.postcentral              | 1.1846  | 0.2381 | -1.3567 | 2.6260   | 0.4706    |
+| 41 | \Delta VOL_ctx.lh.posteriorcingulate       | -0.2974 | 0.7666 | 1.8490  | 3.2422   | 0.8536    |
+| 42 | \Delta VOL_ctx.lh.precentral               | -0.4343 | 0.6647 | 1.0114  | 2.2386   | 0.7740    |
+| 43 | \Delta VOL_ctx.lh.precuneus                | -0.6681 | 0.5051 | 1.7698  | 3.6531   | 0.7038    |
+| 44 | \Delta VOL_ctx.lh.rostralanteriorcingulate | 1.3355  | 0.1838 | -0.4330 | 0.5597   | 0.4315    |
+| 45 | \Delta VOL_ctx.lh.rostralmiddlefrontal     | -0.6456 | 0.5196 | -1.1592 | 1.2149   | 0.7123    |
+| 46 | \Delta VOL_ctx.lh.superiorfrontal          | -0.7530 | 0.4526 | 1.3697  | 1.7221   | 0.6633    |
+| 47 | \Delta VOL_ctx.lh.superiorparietal         | -0.8943 | 0.3726 | 3.0604  | 3.3431   | 0.6218    |
+| 48 | \Delta VOL_ctx.lh.superiortemporal         | 2.4341  | 0.0161 | -0.9346 | 1.6118   | 0.1142    |
+| 49 | \Delta VOL_ctx.lh.supramarginal            | 0.6062  | 0.5453 | 1.7149  | 2.3978   | 0.7272    |
+| 50 | \Delta VOL_ctx.lh.frontalpole              | -0.3142 | 0.7538 | 0.3078  | 0.5047   | 0.8536    |
+| 51 | \Delta VOL_ctx.lh.temporalpole             | 2.5288  | 0.0125 | -0.0731 | 1.3167   | 0.0966    |
+| 52 | \Delta VOL_ctx.lh.transversetemporal       | 0.4916  | 0.6237 | -0.1242 | 2.2582   | 0.7467    |
+| 53 | \Delta VOL_ctx.rh.bankssts                 | 0.5163  | 0.6065 | 3.7489  | 2.9357   | 0.7467    |
+| 54 | \Delta VOL_ctx.rh.caudalanteriorcingulate  | -0.5832 | 0.5607 | 3.7966  | 2.5652   | 0.7272    |
+| 55 | \Delta VOL_ctx.rh.caudalmiddlefrontal      | -2.1288 | 0.0349 | 3.7973  | 2.2639   | 0.1650    |
+| 56 | \Delta VOL_ctx.rh.cuneus                   | 0.4958  | 0.6208 | 1.5703  | 2.3637   | 0.7467    |
+| 57 | \Delta VOL_ctx.rh.entorhinal               | 1.5027  | 0.1351 | 0.8497  | 2.7893   | 0.3827    |
+| 58 | \Delta VOL_ctx.rh.fusiform                 | 1.5232  | 0.1299 | 3.0726  | 4.7018   | 0.3827    |
+| 59 | \Delta VOL_ctx.rh.inferiorparietal         | -2.1634 | 0.0321 | 4.4789  | 0.4878   | 0.1650    |
+| 60 | \Delta VOL_ctx.rh.inferiortemporal         | 0.7744  | 0.4399 | 3.4222  | 3.1417   | 0.6633    |
+| 61 | \Delta VOL_ctx.rh.isthmuscingulate         | 0.1433  | 0.8862 | 1.2205  | 1.3723   | 0.9300    |
+| 62 | \Delta VOL_ctx.rh.lateraloccipital         | 1.3081  | 0.1929 | 2.0248  | 1.2966   | 0.4315    |
+| 63 | \Delta VOL_ctx.rh.lateralorbitofrontal     | 0.5372  | 0.5919 | 0.3479  | 2.9289   | 0.7399    |
+| 64 | \Delta VOL_ctx.rh.lingual                  | 0.8383  | 0.4032 | 0.8111  | 3.1622   | 0.6466    |
+| 65 | \Delta VOL_ctx.rh.medialorbitofrontal      | 0.8396  | 0.4025 | 1.9647  | 2.4872   | 0.6466    |
+| 66 | \Delta VOL_ctx.rh.middletemporal           | 0.0035  | 0.9972 | 4.4103  | 3.1633   | 0.9972    |
+| 67 | \Delta VOL_ctx.rh.parahippocampal          | 2.1391  | 0.0341 | 1.5490  | 3.5064   | 0.1650    |
+| 68 | \Delta VOL_ctx.rh.paracentral              | -2.8137 | 0.0056 | 3.8171  | 2.3520   | 0.0789    |
+| 69 | \Delta VOL_ctx.rh.parsopercularis          | -2.6602 | 0.0087 | 3.6841  | 2.9648   | 0.0966    |
+| 70 | \Delta VOL_ctx.rh.parsorbitalis            | 1.0618  | 0.2900 | -0.5147 | 2.4706   | 0.5246    |
+| 71 | \Delta VOL_ctx.rh.parstriangularis         | -1.0748 | 0.2842 | 1.7916  | 2.6677   | 0.5246    |
+| 72 | \Delta VOL_ctx.rh.pericalcarine            | 1.6576  | 0.0995 | 0.6262  | 2.2825   | 0.3384    |
+| 73 | \Delta VOL_ctx.rh.postcentral              | -1.3179 | 0.1896 | 1.6212  | 2.8229   | 0.4315    |
+| 74 | \Delta VOL_ctx.rh.posteriorcingulate       | -1.1543 | 0.2502 | 3.5184  | 1.4907   | 0.4834    |
+| 75 | \Delta VOL_ctx.rh.precentral               | -1.9054 | 0.0587 | 2.4047  | 3.3737   | 0.2191    |
+| 76 | \Delta VOL_ctx.rh.precuneus                | -1.2099 | 0.2283 | 3.1519  | 2.3670   | 0.4706    |
+| 77 | \Delta VOL_ctx.rh.rostralanteriorcingulate | 2.2581  | 0.0254 | 2.7043  | 2.2909   | 0.1483    |
+| 78 | \Delta VOL_ctx.rh.rostralmiddlefrontal     | -2.6061 | 0.0101 | 0.9748  | 2.2586   | 0.0966    |
+| 79 | \Delta VOL_ctx.rh.superiorfrontal          | -2.3635 | 0.0194 | 2.6759  | 3.0793   | 0.1269    |
+| 80 | \Delta VOL_ctx.rh.superiorparietal         | -2.0988 | 0.0375 | 2.5670  | 1.9770   | 0.1680    |
+| 81 | \Delta VOL_ctx.rh.superiortemporal         | 0.6906  | 0.4909 | 3.3716  | 4.0534   | 0.6954    |
+| 82 | \Delta VOL_ctx.rh.supramarginal            | -1.9008 | 0.0593 | 4.8481  | 2.8117   | 0.2191    |
+| 83 | \Delta VOL_ctx.rh.frontalpole              | 0.8934  | 0.3731 | 0.3230  | 1.9506   | 0.6218    |
+| 84 | \Delta VOL_ctx.rh.temporalpole             | 0.5802  | 0.5626 | 1.9373  | 3.9473   | 0.7272    |
+| 85 | \Delta VOL_ctx.rh.transversetemporal       | 1.3252  | 0.1872 | 3.6402  | 3.1050   | 0.4315    |
+
+** Supplementary Table 4-without site                              :noexport:
+#+BEGIN_SRC R :results output raw :exports results
+  library(ascii)
+  library(stringr)
+  mt<-read.csv('/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/N156_dMADRSperc-dVol+Age+ECTnum.csv')[,c(2:5,7)]
+  mt$roi<-str_replace(mt$roi,'EF','\\\\Delta MADRS ~ \\\\Delta VOL')
+
+  colnames(mt)[c(2:5)]<-c('t_VOL','p_VOL','t_Age','t_ECTnum')
+  mt.asc<-ascii(mt, colnames=colnames(mt),digits=4,
+               caption="The relationship clinical response and volume changes
+  across individuals (\\Delta MADRS ~ \\Delta Vol + Age + ECTnum)")
+
+  print(mt.asc,type="org")
+
+#+END_SRC
+
+#+RESULTS:
+#+CAPTION: The relationship clinical response and volume changes across individuals ( \Delta MADRS ~ \Delta Vol + Age + ECTnum)
+|    | roi                                                       | t_VOL   | p_VOL  | t_Age  | t_ECTnum |
+|----+-----------------------------------------------------------+---------+--------+--------+----------|
+| 1  | \Delta MADRS ~ \Delta VOL_Left.Cerebellum.Cortex          | -0.4996 | 0.6181 | 5.6129 | -2.8409  |
+| 2  | \Delta MADRS ~ \Delta VOL_Left.Thalamus.Proper            | 0.6014  | 0.5485 | 5.5399 | -3.0339  |
+| 3  | \Delta MADRS ~ \Delta VOL_Left.Caudate                    | -0.9727 | 0.3323 | 5.5351 | -2.6916  |
+| 4  | \Delta MADRS ~ \Delta VOL_Left.Putamen                    | 0.1944  | 0.8462 | 5.5897 | -2.9713  |
+| 5  | \Delta MADRS ~ \Delta VOL_Left.Pallidum                   | -0.6016 | 0.5483 | 5.6222 | -2.8859  |
+| 6  | \Delta MADRS ~ \Delta VOL_Brain.Stem                      | 0.0780  | 0.9380 | 5.5551 | -2.9623  |
+| 7  | \Delta MADRS ~ \Delta VOL_Left.Hippocampus                | 0.2436  | 0.8079 | 5.3838 | -2.7114  |
+| 8  | \Delta MADRS ~ \Delta VOL_Left.Amygdala                   | 0.0822  | 0.9346 | 5.5736 | -2.9514  |
+| 9  | \Delta MADRS ~ \Delta VOL_Left.Accumbens.area             | -1.1617 | 0.2472 | 5.1099 | -2.7724  |
+| 10 | \Delta MADRS ~ \Delta VOL_Left.VentralDC                  | -0.2002 | 0.8416 | 5.5898 | -2.8887  |
+| 11 | \Delta MADRS ~ \Delta VOL_Right.Cerebellum.Cortex         | -0.0366 | 0.9708 | 5.5858 | -2.9504  |
+| 12 | \Delta MADRS ~ \Delta VOL_Right.Thalamus.Proper           | 1.4615  | 0.1460 | 5.3363 | -3.2850  |
+| 13 | \Delta MADRS ~ \Delta VOL_Right.Caudate                   | -0.0246 | 0.9804 | 5.5218 | -2.9425  |
+| 14 | \Delta MADRS ~ \Delta VOL_Right.Putamen                   | -1.0967 | 0.2746 | 5.6266 | -2.8020  |
+| 15 | \Delta MADRS ~ \Delta VOL_Right.Pallidum                  | 0.1767  | 0.8600 | 5.4055 | -2.9293  |
+| 16 | \Delta MADRS ~ \Delta VOL_Right.Hippocampus               | -0.7164 | 0.4749 | 5.4632 | -2.4620  |
+| 17 | \Delta MADRS ~ \Delta VOL_Right.Amygdala                  | 1.5094  | 0.1333 | 5.1476 | -3.3036  |
+| 18 | \Delta MADRS ~ \Delta VOL_Right.Accumbens.area            | 0.0774  | 0.9384 | 5.5702 | -2.8683  |
+| 19 | \Delta MADRS ~ \Delta VOL_Right.VentralDC                 | -0.3931 | 0.6948 | 5.6024 | -2.9437  |
+| 20 | \Delta MADRS ~ \Delta VOL_ctx.lh.bankssts                 | -0.7238 | 0.4703 | 5.6411 | -2.7428  |
+| 21 | \Delta MADRS ~ \Delta VOL_ctx.lh.caudalanteriorcingulate  | 1.2169  | 0.2256 | 5.3627 | -3.1468  |
+| 22 | \Delta MADRS ~ \Delta VOL_ctx.lh.caudalmiddlefrontal      | 0.0928  | 0.9262 | 5.5154 | -2.9549  |
+| 23 | \Delta MADRS ~ \Delta VOL_ctx.lh.cuneus                   | 0.6429  | 0.5213 | 5.5821 | -3.0413  |
+| 24 | \Delta MADRS ~ \Delta VOL_ctx.lh.entorhinal               | 0.4162  | 0.6779 | 5.6001 | -3.0022  |
+| 25 | \Delta MADRS ~ \Delta VOL_ctx.lh.fusiform                 | 1.6961  | 0.0920 | 5.3670 | -3.2505  |
+| 26 | \Delta MADRS ~ \Delta VOL_ctx.lh.inferiorparietal         | 0.1364  | 0.8917 | 5.3652 | -2.9423  |
+| 27 | \Delta MADRS ~ \Delta VOL_ctx.lh.inferiortemporal         | 0.2425  | 0.8088 | 5.4837 | -2.9730  |
+| 28 | \Delta MADRS ~ \Delta VOL_ctx.lh.isthmuscingulate         | 0.2110  | 0.8332 | 5.5711 | -2.9383  |
+| 29 | \Delta MADRS ~ \Delta VOL_ctx.lh.lateraloccipital         | 0.7252  | 0.4695 | 5.3551 | -3.0336  |
+| 30 | \Delta MADRS ~ \Delta VOL_ctx.lh.lateralorbitofrontal     | -0.5301 | 0.5969 | 5.5877 | -2.8830  |
+| 31 | \Delta MADRS ~ \Delta VOL_ctx.lh.lingual                  | 1.2153  | 0.2262 | 5.4860 | -3.1695  |
+| 32 | \Delta MADRS ~ \Delta VOL_ctx.lh.medialorbitofrontal      | -0.3501 | 0.7268 | 5.5881 | -2.9271  |
+| 33 | \Delta MADRS ~ \Delta VOL_ctx.lh.middletemporal           | -0.6038 | 0.5469 | 5.6240 | -2.8140  |
+| 34 | \Delta MADRS ~ \Delta VOL_ctx.lh.parahippocampal          | 1.5379  | 0.1262 | 5.3899 | -3.2626  |
+| 35 | \Delta MADRS ~ \Delta VOL_ctx.lh.paracentral              | 0.3763  | 0.7072 | 5.4862 | -2.9448  |
+| 36 | \Delta MADRS ~ \Delta VOL_ctx.lh.parsopercularis          | -0.4156 | 0.6783 | 5.6035 | -2.8779  |
+| 37 | \Delta MADRS ~ \Delta VOL_ctx.lh.parsorbitalis            | -1.0305 | 0.3045 | 5.5172 | -2.8969  |
+| 38 | \Delta MADRS ~ \Delta VOL_ctx.lh.parstriangularis         | -1.2208 | 0.2241 | 5.5629 | -2.6377  |
+| 39 | \Delta MADRS ~ \Delta VOL_ctx.lh.pericalcarine            | 0.7751  | 0.4395 | 5.5888 | -3.0587  |
+| 40 | \Delta MADRS ~ \Delta VOL_ctx.lh.postcentral              | -1.0000 | 0.3190 | 5.4727 | -2.6996  |
+| 41 | \Delta MADRS ~ \Delta VOL_ctx.lh.posteriorcingulate       | 0.5498  | 0.5833 | 5.4460 | -3.0158  |
+| 42 | \Delta MADRS ~ \Delta VOL_ctx.lh.precentral               | -0.0495 | 0.9606 | 5.5712 | -2.9143  |
+| 43 | \Delta MADRS ~ \Delta VOL_ctx.lh.precuneus                | 0.3625  | 0.7175 | 5.4787 | -2.9521  |
+| 44 | \Delta MADRS ~ \Delta VOL_ctx.lh.rostralanteriorcingulate | -0.1290 | 0.8975 | 5.5730 | -2.9618  |
+| 45 | \Delta MADRS ~ \Delta VOL_ctx.lh.rostralmiddlefrontal     | -1.9406 | 0.0542 | 5.4669 | -2.8022  |
+| 46 | \Delta MADRS ~ \Delta VOL_ctx.lh.superiorfrontal          | -0.3027 | 0.7626 | 5.5862 | -2.9033  |
+| 47 | \Delta MADRS ~ \Delta VOL_ctx.lh.superiorparietal         | -0.0438 | 0.9651 | 5.4356 | -2.8571  |
+| 48 | \Delta MADRS ~ \Delta VOL_ctx.lh.superiortemporal         | -0.3779 | 0.7061 | 5.5151 | -2.8940  |
+| 49 | \Delta MADRS ~ \Delta VOL_ctx.lh.supramarginal            | 0.1638  | 0.8701 | 5.5116 | -2.9469  |
+| 50 | \Delta MADRS ~ \Delta VOL_ctx.lh.frontalpole              | -1.0660 | 0.2882 | 5.6368 | -2.9350  |
+| 51 | \Delta MADRS ~ \Delta VOL_ctx.lh.temporalpole             | -0.0468 | 0.9627 | 5.5854 | -2.9437  |
+| 52 | \Delta MADRS ~ \Delta VOL_ctx.lh.transversetemporal       | 0.2540  | 0.7999 | 5.5916 | -2.9687  |
+| 53 | \Delta MADRS ~ \Delta VOL_ctx.rh.bankssts                 | 0.9053  | 0.3668 | 5.0801 | -3.1088  |
+| 54 | \Delta MADRS ~ \Delta VOL_ctx.rh.caudalanteriorcingulate  | 0.3475  | 0.7287 | 5.2346 | -2.9811  |
+| 55 | \Delta MADRS ~ \Delta VOL_ctx.rh.caudalmiddlefrontal      | -1.0823 | 0.2809 | 5.6919 | -2.7464  |
+| 56 | \Delta MADRS ~ \Delta VOL_ctx.rh.cuneus                   | 1.8884  | 0.0609 | 5.3569 | -3.3128  |
+| 57 | \Delta MADRS ~ \Delta VOL_ctx.rh.entorhinal               | 0.0560  | 0.9554 | 5.5400 | -2.9105  |
+| 58 | \Delta MADRS ~ \Delta VOL_ctx.rh.fusiform                 | 1.8334  | 0.0688 | 4.8882 | -3.4592  |
+| 59 | \Delta MADRS ~ \Delta VOL_ctx.rh.inferiorparietal         | 0.5439  | 0.5873 | 5.0947 | -2.9941  |
+| 60 | \Delta MADRS ~ \Delta VOL_ctx.rh.inferiortemporal         | 1.3208  | 0.1886 | 5.0209 | -3.2240  |
+| 61 | \Delta MADRS ~ \Delta VOL_ctx.rh.isthmuscingulate         | -0.3354 | 0.7378 | 5.5933 | -2.9160  |
+| 62 | \Delta MADRS ~ \Delta VOL_ctx.rh.lateraloccipital         | 0.8522  | 0.3955 | 5.3702 | -3.0514  |
+| 63 | \Delta MADRS ~ \Delta VOL_ctx.rh.lateralorbitofrontal     | -0.3644 | 0.7161 | 5.5981 | -2.8076  |
+| 64 | \Delta MADRS ~ \Delta VOL_ctx.rh.lingual                  | 1.4913  | 0.1380 | 5.4989 | -3.2735  |
+| 65 | \Delta MADRS ~ \Delta VOL_ctx.rh.medialorbitofrontal      | -0.7994 | 0.4253 | 5.6489 | -2.7635  |
+| 66 | \Delta MADRS ~ \Delta VOL_ctx.rh.middletemporal           | -0.2340 | 0.8153 | 5.3303 | -2.8169  |
+| 67 | \Delta MADRS ~ \Delta VOL_ctx.rh.parahippocampal          | 0.9612  | 0.3380 | 5.3354 | -3.1011  |
+| 68 | \Delta MADRS ~ \Delta VOL_ctx.rh.paracentral              | -0.1723 | 0.8635 | 5.4405 | -2.8938  |
+| 69 | \Delta MADRS ~ \Delta VOL_ctx.rh.parsopercularis          | -1.2194 | 0.2246 | 5.7367 | -2.6122  |
+| 70 | \Delta MADRS ~ \Delta VOL_ctx.rh.parsorbitalis            | -0.4771 | 0.6340 | 5.5286 | -2.8337  |
+| 71 | \Delta MADRS ~ \Delta VOL_ctx.rh.parstriangularis         | -0.9698 | 0.3338 | 5.6854 | -2.7035  |
+| 72 | \Delta MADRS ~ \Delta VOL_ctx.rh.pericalcarine            | 0.6953  | 0.4880 | 5.5519 | -3.0529  |
+| 73 | \Delta MADRS ~ \Delta VOL_ctx.rh.postcentral              | -0.8104 | 0.4190 | 5.6535 | -2.7233  |
+| 74 | \Delta MADRS ~ \Delta VOL_ctx.rh.posteriorcingulate       | 0.2733  | 0.7850 | 5.3170 | -2.9835  |
+| 75 | \Delta MADRS ~ \Delta VOL_ctx.rh.precentral               | -0.5814 | 0.5619 | 5.6124 | -2.7227  |
+| 76 | \Delta MADRS ~ \Delta VOL_ctx.rh.precuneus                | 0.9170  | 0.3607 | 5.2108 | -3.0999  |
+| 77 | \Delta MADRS ~ \Delta VOL_ctx.rh.rostralanteriorcingulate | -0.2783 | 0.7812 | 5.5346 | -2.8761  |
+| 78 | \Delta MADRS ~ \Delta VOL_ctx.rh.rostralmiddlefrontal     | -1.9601 | 0.0519 | 5.7845 | -2.6038  |
+| 79 | \Delta MADRS ~ \Delta VOL_ctx.rh.superiorfrontal          | -0.5633 | 0.5741 | 5.5987 | -2.7686  |
+| 80 | \Delta MADRS ~ \Delta VOL_ctx.rh.superiorparietal         | -0.0981 | 0.9220 | 5.5139 | -2.9201  |
+| 81 | \Delta MADRS ~ \Delta VOL_ctx.rh.superiortemporal         | 0.2295  | 0.8188 | 5.2989 | -2.8918  |
+| 82 | \Delta MADRS ~ \Delta VOL_ctx.rh.supramarginal            | 0.5443  | 0.5871 | 5.0334 | -3.0211  |
+| 83 | \Delta MADRS ~ \Delta VOL_ctx.rh.frontalpole              | -0.6669 | 0.5059 | 5.6124 | -2.8353  |
+| 84 | \Delta MADRS ~ \Delta VOL_ctx.rh.temporalpole             | -0.1912 | 0.8486 | 5.5429 | -2.7693  |
+| 85 | \Delta MADRS ~ \Delta VOL_ctx.rh.transversetemporal       | 1.1493  | 0.2523 | 5.0365 | -3.1736  |
+
+** Supplementary Table 5-without site                              :noexport:
+#+BEGIN_SRC R :results output raw :exports results
+  library(ascii)
+  library(stringr)
+  mt<-read.csv('/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/N156_dMADRS-EF+Age+ECTnum.csv')[,c(2:5,7)]
+  mt$roi<-str_replace(mt$roi,'EF','\\\\Delta MADRS ~ EF')
+
+  colnames(mt)[c(2:5)]<-c('t_EF','p_EF','t_Age','t_ECTnum')
+  mt.asc<-ascii(mt, colnames=colnames(mt),digits=4,
+               caption="The relationship clinical response and EF across  individuals (\\Delta MADRS ~ EF + Age + ECTnum)")
+
+  print(mt.asc,type="org")
+
+#+END_SRC
+
+#+RESULTS:
+#+CAPTION: The relationship clinical response and EF across  individuals ( \Delta MADRS ~ EF + Age + ECTnum)
+|    | roi                                               |    t_EF |   p_EF |  t_Age | t_ECTnum |
+|----+---------------------------------------------------+---------+--------+--------+----------|
+|  1 | \Delta MADRS ~ EF_Left.Cerebellum.Cortex          |  1.0729 | 0.2850 | 5.5852 |  -3.0251 |
+|  2 | \Delta MADRS ~ EF_Left.Thalamus.Proper            |  0.6484 | 0.5177 | 5.7915 |  -3.0335 |
+|  3 | \Delta MADRS ~ EF_Left.Caudate                    |  0.2465 | 0.8056 | 5.5950 |  -2.9996 |
+|  4 | \Delta MADRS ~ EF_Left.Putamen                    |  0.6476 | 0.5182 | 5.7118 |  -3.0296 |
+|  5 | \Delta MADRS ~ EF_Left.Pallidum                   |  0.9034 | 0.3678 | 5.8375 |  -3.0492 |
+|  6 | \Delta MADRS ~ EF_Brain.Stem                      |  0.6785 | 0.4985 | 5.7291 |  -2.9881 |
+|  7 | \Delta MADRS ~ EF_Left.Hippocampus                |  0.9586 | 0.3393 | 5.8164 |  -2.9869 |
+|  8 | \Delta MADRS ~ EF_Left.Amygdala                   |  0.8356 | 0.4047 | 5.8187 |  -2.9965 |
+|  9 | \Delta MADRS ~ EF_Left.Accumbens.area             |  0.8397 | 0.4024 | 5.7151 |  -3.0606 |
+| 10 | \Delta MADRS ~ EF_Left.VentralDC                  |  0.5836 | 0.5603 | 5.7794 |  -2.9930 |
+| 11 | \Delta MADRS ~ EF_Right.Cerebellum.Cortex         |  0.7419 | 0.4593 | 5.6385 |  -3.0142 |
+| 12 | \Delta MADRS ~ EF_Right.Thalamus.Proper           |  0.3664 | 0.7146 | 5.6664 |  -3.0061 |
+| 13 | \Delta MADRS ~ EF_Right.Caudate                   |  0.4501 | 0.6533 | 5.4892 |  -2.9882 |
+| 14 | \Delta MADRS ~ EF_Right.Putamen                   |  0.3775 | 0.7063 | 5.6330 |  -2.9785 |
+| 15 | \Delta MADRS ~ EF_Right.Pallidum                  |  0.2980 | 0.7661 | 5.6591 |  -2.9947 |
+| 16 | \Delta MADRS ~ EF_Right.Hippocampus               |  0.4067 | 0.6848 | 5.4613 |  -2.9633 |
+| 17 | \Delta MADRS ~ EF_Right.Amygdala                  |  0.2329 | 0.8162 | 5.5963 |  -2.9639 |
+| 18 | \Delta MADRS ~ EF_Right.Accumbens.area            |  0.1935 | 0.8468 | 5.2760 |  -2.9919 |
+| 19 | \Delta MADRS ~ EF_Right.VentralDC                 |  0.3970 | 0.6919 | 5.6119 |  -2.9872 |
+| 20 | \Delta MADRS ~ EF_ctx.lh.bankssts                 |  0.7720 | 0.4413 | 5.7797 |  -3.0017 |
+| 21 | \Delta MADRS ~ EF_ctx.lh.caudalanteriorcingulate  |  0.7321 | 0.4652 | 5.7306 |  -3.0369 |
+| 22 | \Delta MADRS ~ EF_ctx.lh.caudalmiddlefrontal      |  1.6230 | 0.1067 | 5.8155 |  -3.1217 |
+| 23 | \Delta MADRS ~ EF_ctx.lh.cuneus                   |  1.0493 | 0.2957 | 5.7715 |  -3.0233 |
+| 24 | \Delta MADRS ~ EF_ctx.lh.entorhinal               |  0.7417 | 0.4594 | 5.4240 |  -3.0486 |
+| 25 | \Delta MADRS ~ EF_ctx.lh.fusiform                 |  0.6001 | 0.5493 | 5.5530 |  -3.0177 |
+| 26 | \Delta MADRS ~ EF_ctx.lh.inferiorparietal         |  1.2025 | 0.2310 | 5.7973 |  -3.0616 |
+| 27 | \Delta MADRS ~ EF_ctx.lh.inferiortemporal         |  0.5688 | 0.5703 | 5.7855 |  -3.0102 |
+| 28 | \Delta MADRS ~ EF_ctx.lh.isthmuscingulate         |  1.1930 | 0.2347 | 5.7288 |  -3.0257 |
+| 29 | \Delta MADRS ~ EF_ctx.lh.lateraloccipital         |  0.6223 | 0.5347 | 5.7496 |  -3.0184 |
+| 30 | \Delta MADRS ~ EF_ctx.lh.lateralorbitofrontal     |  1.1319 | 0.2594 | 5.8352 |  -3.0111 |
+| 31 | \Delta MADRS ~ EF_ctx.lh.lingual                  | -0.1113 | 0.9115 | 5.6612 |  -2.9889 |
+| 32 | \Delta MADRS ~ EF_ctx.lh.medialorbitofrontal      |  1.0558 | 0.2928 | 5.6124 |  -2.9627 |
+| 33 | \Delta MADRS ~ EF_ctx.lh.middletemporal           |  1.1909 | 0.2355 | 5.8796 |  -3.0608 |
+| 34 | \Delta MADRS ~ EF_ctx.lh.parahippocampal          |  0.8290 | 0.4084 | 5.4999 |  -3.0089 |
+| 35 | \Delta MADRS ~ EF_ctx.lh.paracentral              |  1.4369 | 0.1528 | 5.6396 |  -3.0939 |
+| 36 | \Delta MADRS ~ EF_ctx.lh.parsopercularis          |  0.7525 | 0.4529 | 5.8115 |  -3.0192 |
+| 37 | \Delta MADRS ~ EF_ctx.lh.parsorbitalis            | -0.1052 | 0.9163 | 5.3577 |  -2.9898 |
+| 38 | \Delta MADRS ~ EF_ctx.lh.parstriangularis         |  0.5548 | 0.5798 | 5.7534 |  -3.0134 |
+| 39 | \Delta MADRS ~ EF_ctx.lh.pericalcarine            | -0.1934 | 0.8469 | 5.7530 |  -2.9951 |
+| 40 | \Delta MADRS ~ EF_ctx.lh.postcentral              |  1.4783 | 0.1414 | 5.6536 |  -3.0672 |
+| 41 | \Delta MADRS ~ EF_ctx.lh.posteriorcingulate       |  1.5740 | 0.1176 | 5.1223 |  -3.0018 |
+| 42 | \Delta MADRS ~ EF_ctx.lh.precentral               |  1.3073 | 0.1931 | 5.7384 |  -3.0825 |
+| 43 | \Delta MADRS ~ EF_ctx.lh.precuneus                |  1.4822 | 0.1403 | 5.7691 |  -3.0507 |
+| 44 | \Delta MADRS ~ EF_ctx.lh.rostralanteriorcingulate |  0.6225 | 0.5346 | 5.7910 |  -3.0211 |
+| 45 | \Delta MADRS ~ EF_ctx.lh.rostralmiddlefrontal     |  0.8971 | 0.3711 | 5.8320 |  -3.0199 |
+| 46 | \Delta MADRS ~ EF_ctx.lh.superiorfrontal          |  1.5729 | 0.1178 | 5.8125 |  -3.1158 |
+| 47 | \Delta MADRS ~ EF_ctx.lh.superiorparietal         |  1.7453 | 0.0830 | 5.5964 |  -3.1344 |
+| 48 | \Delta MADRS ~ EF_ctx.lh.superiortemporal         |  1.1149 | 0.2666 | 5.8816 |  -3.0631 |
+| 49 | \Delta MADRS ~ EF_ctx.lh.supramarginal            |  0.8554 | 0.3937 | 5.8192 |  -3.0263 |
+| 50 | \Delta MADRS ~ EF_ctx.lh.frontalpole              |  1.5741 | 0.1175 | 5.9783 |  -2.9716 |
+| 51 | \Delta MADRS ~ EF_ctx.lh.temporalpole             | -0.0541 | 0.9570 | 5.7171 |  -2.9690 |
+| 52 | \Delta MADRS ~ EF_ctx.lh.transversetemporal       |  0.8746 | 0.3831 | 5.7225 |  -3.0105 |
+| 53 | \Delta MADRS ~ EF_ctx.rh.bankssts                 |  0.0358 | 0.9715 | 5.7456 |  -2.9767 |
+| 54 | \Delta MADRS ~ EF_ctx.rh.caudalanteriorcingulate  |  1.1546 | 0.2501 | 5.6791 |  -3.0717 |
+| 55 | \Delta MADRS ~ EF_ctx.rh.caudalmiddlefrontal      |  0.7365 | 0.4626 | 5.4944 |  -2.9996 |
+| 56 | \Delta MADRS ~ EF_ctx.rh.cuneus                   |  0.9656 | 0.3358 | 5.7107 |  -2.9951 |
+| 57 | \Delta MADRS ~ EF_ctx.rh.entorhinal               |  0.1481 | 0.8824 | 5.3220 |  -2.9840 |
+| 58 | \Delta MADRS ~ EF_ctx.rh.fusiform                 | -0.1324 | 0.8949 | 5.5497 |  -2.9913 |
+| 59 | \Delta MADRS ~ EF_ctx.rh.inferiorparietal         |  0.2125 | 0.8320 | 5.7156 |  -2.9832 |
+| 60 | \Delta MADRS ~ EF_ctx.rh.inferiortemporal         | -0.1287 | 0.8978 | 5.7122 |  -2.9925 |
+| 61 | \Delta MADRS ~ EF_ctx.rh.isthmuscingulate         |  1.0125 | 0.3129 | 5.7276 |  -3.0182 |
+| 62 | \Delta MADRS ~ EF_ctx.rh.lateraloccipital         |  1.1869 | 0.2371 | 5.6885 |  -2.9804 |
+| 63 | \Delta MADRS ~ EF_ctx.rh.lateralorbitofrontal     | -0.0720 | 0.9427 | 5.6659 |  -2.9819 |
+| 64 | \Delta MADRS ~ EF_ctx.rh.lingual                  |  0.2481 | 0.8044 | 5.6854 |  -2.9924 |
+| 65 | \Delta MADRS ~ EF_ctx.rh.medialorbitofrontal      |  0.7507 | 0.4540 | 5.2981 |  -2.9262 |
+| 66 | \Delta MADRS ~ EF_ctx.rh.middletemporal           | -0.4185 | 0.6762 | 5.7628 |  -3.0011 |
+| 67 | \Delta MADRS ~ EF_ctx.rh.parahippocampal          | -0.3274 | 0.7438 | 5.6426 |  -2.9710 |
+| 68 | \Delta MADRS ~ EF_ctx.rh.paracentral              |  1.3671 | 0.1736 | 5.3945 |  -3.0419 |
+| 69 | \Delta MADRS ~ EF_ctx.rh.parsopercularis          |  0.0922 | 0.9266 | 5.6926 |  -2.9814 |
+| 70 | \Delta MADRS ~ EF_ctx.rh.parsorbitalis            | -1.6612 | 0.0987 | 4.6306 |  -3.3107 |
+| 71 | \Delta MADRS ~ EF_ctx.rh.parstriangularis         | -0.0758 | 0.9396 | 5.7513 |  -2.9906 |
+| 72 | \Delta MADRS ~ EF_ctx.rh.pericalcarine            |  0.7413 | 0.4596 | 5.7712 |  -2.9733 |
+| 73 | \Delta MADRS ~ EF_ctx.rh.postcentral              |  0.7071 | 0.4806 | 5.4197 |  -3.0031 |
+| 74 | \Delta MADRS ~ EF_ctx.rh.posteriorcingulate       |  1.6772 | 0.0956 | 5.1599 |  -2.9853 |
+| 75 | \Delta MADRS ~ EF_ctx.rh.precentral               |  0.2024 | 0.8398 | 5.5333 |  -2.9932 |
+| 76 | \Delta MADRS ~ EF_ctx.rh.precuneus                |  1.2978 | 0.1963 | 5.6428 |  -3.0119 |
+| 77 | \Delta MADRS ~ EF_ctx.rh.rostralanteriorcingulate |  0.6457 | 0.5195 | 5.7952 |  -2.9757 |
+| 78 | \Delta MADRS ~ EF_ctx.rh.rostralmiddlefrontal     |  0.0908 | 0.9278 | 5.7433 |  -2.9877 |
+| 79 | \Delta MADRS ~ EF_ctx.rh.superiorfrontal          |  1.3369 | 0.1833 | 5.5063 |  -3.1044 |
+| 80 | \Delta MADRS ~ EF_ctx.rh.superiorparietal         |  0.9599 | 0.3386 | 5.4972 |  -3.0002 |
+| 81 | \Delta MADRS ~ EF_ctx.rh.superiortemporal         |  0.2291 | 0.8191 | 5.6132 |  -2.9802 |
+| 82 | \Delta MADRS ~ EF_ctx.rh.supramarginal            |  0.2104 | 0.8337 | 5.6825 |  -2.9834 |
+| 83 | \Delta MADRS ~ EF_ctx.rh.frontalpole              |  1.6092 | 0.1096 | 5.6976 |  -2.9869 |
+| 84 | \Delta MADRS ~ EF_ctx.rh.temporalpole             | -0.4614 | 0.6451 | 5.7726 |  -3.0123 |
+| 85 | \Delta MADRS ~ EF_ctx.rh.transversetemporal       |  0.4311 | 0.6670 | 5.7279 |  -2.9418 |
+|    |                                                   |         |        |        |          |
+
+
+** Supplementary Table 3-classic                                   :noexport:
 #+BEGIN_SRC R  :results output raw :exports results
 
   library(ascii)
@@ -1309,7 +2164,7 @@ print(mt.asc,type="org")
 | 85 | \Delta VOL_ctx.rh.transversetemporal       |  1.0726 | 0.2853 | -0.0468 |   3.4598 |    0.5159 |
 |    |                                            |         |        |         |          |           |
 
-** Supplementary Table 4
+** Supplementary Table 4-classic                                   :noexport:
 #+BEGIN_SRC R :results output raw :exports results
   library(ascii)
   library(stringr)
@@ -1414,7 +2269,7 @@ print(mt.asc,type="org")
 | 84 | \Delta MADRS ~ \Delta VOL_ctx.rh.temporalpole             | -0.6126 | 0.5411 | 2.5318 | -2.6560  |
 | 85 | \Delta MADRS ~ \Delta VOL_ctx.rh.transversetemporal       | 1.0526  | 0.2943 | 2.5712 | -3.1486  |
 
-** Supplementary Table 5
+** Supplementary Table 5-classic                                   :noexport:
 #+BEGIN_SRC R :results output raw :exports results
   library(ascii)
   library(stringr)
@@ -1519,5 +2374,436 @@ print(mt.asc,type="org")
 | 83 | \Delta MADRS ~ EF_ctx.rh.frontalpole              | 1.7738  | 0.0782 | 2.6474 | -2.9880  |
 | 84 | \Delta MADRS ~ EF_ctx.rh.temporalpole             | -0.1891 | 0.8503 | 2.8393 | -3.1030  |
 | 85 | \Delta MADRS ~ EF_ctx.rh.transversetemporal       | 0.8436  | 0.4003 | 2.8980 | -2.9848  |
+
+** Supplementary Table 3
+#+BEGIN_SRC R  :results output raw :exports results
+  #install.packages("/home/amiklos/Downloads/ascii_2.1.tar.gz", repos=NULL, type="source")
+  library(ascii)
+  library(stringr)
+  mt<-read.csv('/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/Mixed_N151_dVol-EF+Age+ECTnum+Site_FDRcorrect.csv')[,c(2:5,7,9)]
+  mt$roi<-str_replace(mt$roi,'EF','\\\\Delta VOL')
+  colnames(mt)[6]<-'BH^EF_FDR'
+  mt.asc<-ascii(mt, colnames=colnames(mt),digits=4,caption="The relationship between volume changes and EF across individuals (EF ~ \\Delta Vol + Age + ECTnum)")
+  print(mt.asc,type="org")
+
+#+END_SRC
+
+#+RESULTS:
+#+CAPTION: The relationship between volume changes and EF across individuals (EF ~ \Delta Vol + Age + ECTnum)
+|    | roi                                        | t_EF    | p_EF   | t_Age   | t_ECTnum | BH^EF_FDR |
+|----+--------------------------------------------+---------+--------+---------+----------+-----------|
+| 1  | \Delta VOL_Left.Cerebellum.Cortex          | -0.3668 | 0.7143 | -0.1150 | 1.9368   | 0.8205    |
+| 2  | \Delta VOL_Left.Thalamus.Proper            | 0.0244  | 0.9805 | -0.4046 | 2.8696   | 0.9952    |
+| 3  | \Delta VOL_Left.Caudate                    | 0.6555  | 0.5132 | -0.8301 | 2.6428   | 0.6924    |
+| 4  | \Delta VOL_Left.Putamen                    | 0.5737  | 0.5671 | -0.5992 | 1.3203   | 0.7212    |
+| 5  | \Delta VOL_Left.Pallidum                   | 0.0060  | 0.9952 | 0.1026  | 1.2295   | 0.9952    |
+| 6  | \Delta VOL_Brain.Stem                      | 1.2114  | 0.2278 | 0.8536  | 1.2309   | 0.4466    |
+| 7  | \Delta VOL_Left.Hippocampus                | 4.5102  | 0.0000 | -2.6814 | 3.3221   | 0.0012    |
+| 8  | \Delta VOL_Left.Amygdala                   | 3.9069  | 0.0001 | -1.0572 | 2.1018   | 0.0061    |
+| 9  | \Delta VOL_Left.Accumbens.area             | 2.0238  | 0.0449 | -3.4456 | 1.7246   | 0.1737    |
+| 10 | \Delta VOL_Left.VentralDC                  | 0.1740  | 0.8621 | 0.0605  | 2.2614   | 0.9395    |
+| 11 | \Delta VOL_Right.Cerebellum.Cortex         | -0.5564 | 0.5788 | 0.0677  | 1.3212   | 0.7235    |
+| 12 | \Delta VOL_Right.Thalamus.Proper           | 0.4582  | 0.6475 | 0.3541  | 4.0787   | 0.7712    |
+| 13 | \Delta VOL_Right.Caudate                   | 1.2293  | 0.2210 | 1.0254  | 1.5097   | 0.4466    |
+| 14 | \Delta VOL_Right.Putamen                   | 1.0724  | 0.2854 | -0.5112 | 1.4987   | 0.4756    |
+| 15 | \Delta VOL_Right.Pallidum                  | 0.6045  | 0.5465 | 0.8016  | 2.9589   | 0.7181    |
+| 16 | \Delta VOL_Right.Hippocampus               | 1.5090  | 0.1336 | -1.2924 | 3.2473   | 0.3441    |
+| 17 | \Delta VOL_Right.Amygdala                  | 2.9945  | 0.0032 | -0.6087 | 4.2603   | 0.0344    |
+| 18 | \Delta VOL_Right.Accumbens.area            | 1.9563  | 0.0524 | -0.8782 | 3.5228   | 0.1937    |
+| 19 | \Delta VOL_Right.VentralDC                 | 0.3488  | 0.7278 | 0.5197  | 0.7438   | 0.8248    |
+| 20 | \Delta VOL_ctx.lh.bankssts                 | 1.1757  | 0.2417 | -0.4102 | 2.5801   | 0.4466    |
+| 21 | \Delta VOL_ctx.lh.caudalanteriorcingulate  | 1.3404  | 0.1823 | -1.2881 | 2.2330   | 0.4254    |
+| 22 | \Delta VOL_ctx.lh.caudalmiddlefrontal      | -1.8989 | 0.0596 | -0.3804 | 2.0087   | 0.2112    |
+| 23 | \Delta VOL_ctx.lh.cuneus                   | 0.9827  | 0.3274 | 0.1037  | 2.0348   | 0.5352    |
+| 24 | \Delta VOL_ctx.lh.entorhinal               | 3.2229  | 0.0016 | -1.2447 | 1.6659   | 0.0335    |
+| 25 | \Delta VOL_ctx.lh.fusiform                 | 3.0717  | 0.0026 | -0.1806 | 2.1319   | 0.0344    |
+| 26 | \Delta VOL_ctx.lh.inferiorparietal         | 1.5131  | 0.1325 | 0.8515  | 2.3077   | 0.3441    |
+| 27 | \Delta VOL_ctx.lh.inferiortemporal         | 2.6985  | 0.0078 | 0.6415  | 1.9131   | 0.0577    |
+| 28 | \Delta VOL_ctx.lh.isthmuscingulate         | -0.3275 | 0.7438 | -0.4344 | 2.9060   | 0.8319    |
+| 29 | \Delta VOL_ctx.lh.lateraloccipital         | 1.1916  | 0.2354 | 0.3669  | 1.2752   | 0.4466    |
+| 30 | \Delta VOL_ctx.lh.lateralorbitofrontal     | 1.4274  | 0.1557 | -0.0081 | 1.5758   | 0.3780    |
+| 31 | \Delta VOL_ctx.lh.lingual                  | 0.1391  | 0.8896 | 0.3506  | 2.4745   | 0.9572    |
+| 32 | \Delta VOL_ctx.lh.medialorbitofrontal      | 1.0744  | 0.2845 | -0.1246 | 1.1852   | 0.4756    |
+| 33 | \Delta VOL_ctx.lh.middletemporal           | 2.0679  | 0.0405 | -0.3780 | 2.2600   | 0.1720    |
+| 34 | \Delta VOL_ctx.lh.parahippocampal          | 1.2683  | 0.2068 | -0.2446 | 2.8373   | 0.4466    |
+| 35 | \Delta VOL_ctx.lh.paracentral              | -2.0829 | 0.0391 | 0.2511  | 4.0937   | 0.1720    |
+| 36 | \Delta VOL_ctx.lh.parsopercularis          | -0.6949 | 0.4883 | -0.7822 | 1.8435   | 0.6694    |
+| 37 | \Delta VOL_ctx.lh.parsorbitalis            | 0.8057  | 0.4218 | -1.0427 | 0.9524   | 0.6289    |
+| 38 | \Delta VOL_ctx.lh.parstriangularis         | 0.8228  | 0.4120 | -1.2157 | 2.7977   | 0.6254    |
+| 39 | \Delta VOL_ctx.lh.pericalcarine            | 0.4426  | 0.6587 | -0.0479 | 1.8463   | 0.7712    |
+| 40 | \Delta VOL_ctx.lh.postcentral              | 0.8692  | 0.3862 | -1.7655 | 2.5145   | 0.5969    |
+| 41 | \Delta VOL_ctx.lh.posteriorcingulate       | -0.8698 | 0.3859 | -0.6961 | 3.3193   | 0.5969    |
+| 42 | \Delta VOL_ctx.lh.precentral               | -0.7279 | 0.4679 | -1.2884 | 2.4234   | 0.6682    |
+| 43 | \Delta VOL_ctx.lh.precuneus                | -1.5879 | 0.1145 | -0.4353 | 3.6729   | 0.3441    |
+| 44 | \Delta VOL_ctx.lh.rostralanteriorcingulate | 1.3315  | 0.1852 | -0.4449 | 0.5630   | 0.4254    |
+| 45 | \Delta VOL_ctx.lh.rostralmiddlefrontal     | -0.7192 | 0.4732 | -1.6205 | 1.1936   | 0.6682    |
+| 46 | \Delta VOL_ctx.lh.superiorfrontal          | -1.2073 | 0.2293 | -0.5851 | 2.1065   | 0.4466    |
+| 47 | \Delta VOL_ctx.lh.superiorparietal         | -1.7423 | 0.0836 | 0.6952  | 3.3288   | 0.2734    |
+| 48 | \Delta VOL_ctx.lh.superiortemporal         | 2.2820  | 0.0240 | -2.0868 | 1.6393   | 0.1199    |
+| 49 | \Delta VOL_ctx.lh.supramarginal            | 0.5717  | 0.5685 | -0.2467 | 2.1282   | 0.7212    |
+| 50 | \Delta VOL_ctx.lh.frontalpole              | -0.2029 | 0.8395 | -0.2904 | 0.4776   | 0.9267    |
+| 51 | \Delta VOL_ctx.lh.temporalpole             | 2.5288  | 0.0125 | -0.0731 | 1.3167   | 0.0762    |
+| 52 | \Delta VOL_ctx.lh.transversetemporal       | 0.4387  | 0.6616 | -0.4617 | 2.1817   | 0.7712    |
+| 53 | \Delta VOL_ctx.rh.bankssts                 | 0.1121  | 0.9109 | 2.0777  | 2.9991   | 0.9678    |
+| 54 | \Delta VOL_ctx.rh.caudalanteriorcingulate  | -1.4295 | 0.1551 | 1.2935  | 2.4016   | 0.3780    |
+| 55 | \Delta VOL_ctx.rh.caudalmiddlefrontal      | -2.9569 | 0.0036 | 1.6943  | 2.6065   | 0.0344    |
+| 56 | \Delta VOL_ctx.rh.cuneus                   | -0.0087 | 0.9930 | -1.1806 | 2.4017   | 0.9952    |
+| 57 | \Delta VOL_ctx.rh.entorhinal               | 1.2514  | 0.2129 | 0.7897  | 2.4722   | 0.4466    |
+| 58 | \Delta VOL_ctx.rh.fusiform                 | 1.5380  | 0.1263 | 0.7997  | 4.7854   | 0.3441    |
+| 59 | \Delta VOL_ctx.rh.inferiorparietal         | -2.9902 | 0.0033 | 1.6520  | 0.7114   | 0.0344    |
+| 60 | \Delta VOL_ctx.rh.inferiortemporal         | 0.9300  | 0.3540 | 1.9310  | 3.3455   | 0.5677    |
+| 61 | \Delta VOL_ctx.rh.isthmuscingulate         | 0.0325  | 0.9741 | 0.4230  | 1.1493   | 0.9952    |
+| 62 | \Delta VOL_ctx.rh.lateraloccipital         | 1.1796  | 0.2401 | 0.6095  | 1.5161   | 0.4466    |
+| 63 | \Delta VOL_ctx.rh.lateralorbitofrontal     | 0.5347  | 0.5937 | 0.3393  | 2.9240   | 0.7314    |
+| 64 | \Delta VOL_ctx.rh.lingual                  | -0.0753 | 0.9401 | -1.9555 | 3.5258   | 0.9865    |
+| 65 | \Delta VOL_ctx.rh.medialorbitofrontal      | 0.7090  | 0.4795 | 1.5479  | 2.3419   | 0.6682    |
+| 66 | \Delta VOL_ctx.rh.middletemporal           | -0.6005 | 0.5492 | 2.1275  | 3.6781   | 0.7181    |
+| 67 | \Delta VOL_ctx.rh.parahippocampal          | 1.5217  | 0.1303 | 0.5057  | 3.1874   | 0.3441    |
+| 68 | \Delta VOL_ctx.rh.paracentral              | -3.5101 | 0.0006 | 2.1809  | 2.2718   | 0.0170    |
+| 69 | \Delta VOL_ctx.rh.parsopercularis          | -2.5585 | 0.0116 | 2.8854  | 2.9459   | 0.0756    |
+| 70 | \Delta VOL_ctx.rh.parsorbitalis            | 1.0872  | 0.2788 | -0.5812 | 2.3737   | 0.4756    |
+| 71 | \Delta VOL_ctx.rh.parstriangularis         | -1.2468 | 0.2146 | 1.0686  | 2.6086   | 0.4466    |
+| 72 | \Delta VOL_ctx.rh.pericalcarine            | 1.5878  | 0.1146 | -0.0096 | 2.2815   | 0.3441    |
+| 73 | \Delta VOL_ctx.rh.postcentral              | -1.7565 | 0.0812 | 1.2943  | 3.0605   | 0.2734    |
+| 74 | \Delta VOL_ctx.rh.posteriorcingulate       | -1.5171 | 0.1315 | 2.0716  | 1.4731   | 0.3441    |
+| 75 | \Delta VOL_ctx.rh.precentral               | -2.4918 | 0.0139 | 0.9967  | 3.7013   | 0.0762    |
+| 76 | \Delta VOL_ctx.rh.precuneus                | -2.0231 | 0.0450 | -0.1921 | 2.5419   | 0.1737    |
+| 77 | \Delta VOL_ctx.rh.rostralanteriorcingulate | 2.2083  | 0.0288 | 1.3734  | 2.3606   | 0.1362    |
+| 78 | \Delta VOL_ctx.rh.rostralmiddlefrontal     | -2.6842 | 0.0081 | 0.5804  | 2.2235   | 0.0577    |
+| 79 | \Delta VOL_ctx.rh.superiorfrontal          | -3.0013 | 0.0032 | 1.1011  | 3.2699   | 0.0344    |
+| 80 | \Delta VOL_ctx.rh.superiorparietal         | -2.7495 | 0.0067 | 0.9014  | 2.0779   | 0.0574    |
+| 81 | \Delta VOL_ctx.rh.superiortemporal         | 0.4377  | 0.6623 | 1.2455  | 4.4002   | 0.7712    |
+| 82 | \Delta VOL_ctx.rh.supramarginal            | -2.4794 | 0.0143 | 2.7408  | 3.0429   | 0.0762    |
+| 83 | \Delta VOL_ctx.rh.frontalpole              | 1.1256  | 0.2623 | -0.1784 | 1.9185   | 0.4644    |
+| 84 | \Delta VOL_ctx.rh.temporalpole             | 0.7274  | 0.4682 | 0.5099  | 3.7696   | 0.6682    |
+| 85 | \Delta VOL_ctx.rh.transversetemporal       | 1.1426  | 0.2551 | 0.6448  | 3.2405   | 0.4614    |
+
+
+** Supplementary Table 4
+#+BEGIN_SRC R :results output raw :exports results
+  library(ascii)
+  library(stringr)
+  mt<-read.csv('/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/Mixed_N156_dMADRSperc-dVol+Age+ECTnum+Site.csv')[,c(2:5,7)]
+  mt$roi<-str_replace(mt$roi,'EF','\\\\Delta MADRS ~ \\\\Delta VOL')
+
+  colnames(mt)[c(2:5)]<-c('t_VOL','p_VOL','t_Age','t_ECTnum')
+  mt.asc<-ascii(mt, colnames=colnames(mt),digits=4,
+               caption="The relationship clinical response and volume changes across individuals (\\Delta MADRS ~ \\Delta Vol + Age + ECTnum + Site)")
+
+  print(mt.asc,type="org")
+
+#+END_SRC
+
+#+RESULTS:
+#+CAPTION: The relationship clinical response and volume changes across individuals (\Delta MADRS ~ \Delta Vol + Age + ECTnum + Site)
+|    | roi                                                       | t_VOL   | p_VOL  | t_Age  | t_ECTnum |
+|----+-----------------------------------------------------------+---------+--------+--------+----------|
+| 1  | \Delta MADRS ~ \Delta VOL_Left.Cerebellum.Cortex          | -0.4996 | 0.6181 | 5.6129 | -2.8409  |
+| 2  | \Delta MADRS ~ \Delta VOL_Left.Thalamus.Proper            | 0.6014  | 0.5486 | 5.5399 | -3.0339  |
+| 3  | \Delta MADRS ~ \Delta VOL_Left.Caudate                    | -0.9727 | 0.3324 | 5.5351 | -2.6916  |
+| 4  | \Delta MADRS ~ \Delta VOL_Left.Putamen                    | 0.1944  | 0.8462 | 5.5897 | -2.9713  |
+| 5  | \Delta MADRS ~ \Delta VOL_Left.Pallidum                   | -0.6016 | 0.5484 | 5.6222 | -2.8859  |
+| 6  | \Delta MADRS ~ \Delta VOL_Brain.Stem                      | 0.0780  | 0.9380 | 5.5551 | -2.9623  |
+| 7  | \Delta MADRS ~ \Delta VOL_Left.Hippocampus                | 0.2436  | 0.8079 | 5.3838 | -2.7114  |
+| 8  | \Delta MADRS ~ \Delta VOL_Left.Amygdala                   | 0.0822  | 0.9346 | 5.5736 | -2.9514  |
+| 9  | \Delta MADRS ~ \Delta VOL_Left.Accumbens.area             | -1.1617 | 0.2473 | 5.1099 | -2.7724  |
+| 10 | \Delta MADRS ~ \Delta VOL_Left.VentralDC                  | -0.2002 | 0.8416 | 5.5898 | -2.8887  |
+| 11 | \Delta MADRS ~ \Delta VOL_Right.Cerebellum.Cortex         | -0.0366 | 0.9708 | 5.5858 | -2.9504  |
+| 12 | \Delta MADRS ~ \Delta VOL_Right.Thalamus.Proper           | 1.4615  | 0.1461 | 5.3363 | -3.2850  |
+| 13 | \Delta MADRS ~ \Delta VOL_Right.Caudate                   | -0.0246 | 0.9804 | 5.5218 | -2.9425  |
+| 14 | \Delta MADRS ~ \Delta VOL_Right.Putamen                   | -1.0967 | 0.2746 | 5.6266 | -2.8020  |
+| 15 | \Delta MADRS ~ \Delta VOL_Right.Pallidum                  | 0.1767  | 0.8600 | 5.4055 | -2.9293  |
+| 16 | \Delta MADRS ~ \Delta VOL_Right.Hippocampus               | -0.7164 | 0.4750 | 5.4632 | -2.4620  |
+| 17 | \Delta MADRS ~ \Delta VOL_Right.Amygdala                  | 1.5094  | 0.1334 | 5.1476 | -3.3036  |
+| 18 | \Delta MADRS ~ \Delta VOL_Right.Accumbens.area            | 0.0774  | 0.9384 | 5.5702 | -2.8683  |
+| 19 | \Delta MADRS ~ \Delta VOL_Right.VentralDC                 | -0.3931 | 0.6948 | 5.6024 | -2.9437  |
+| 20 | \Delta MADRS ~ \Delta VOL_ctx.lh.bankssts                 | -0.7238 | 0.4704 | 5.6411 | -2.7428  |
+| 21 | \Delta MADRS ~ \Delta VOL_ctx.lh.caudalanteriorcingulate  | 1.2169  | 0.2257 | 5.3627 | -3.1468  |
+| 22 | \Delta MADRS ~ \Delta VOL_ctx.lh.caudalmiddlefrontal      | 0.0928  | 0.9262 | 5.5154 | -2.9549  |
+| 23 | \Delta MADRS ~ \Delta VOL_ctx.lh.cuneus                   | 0.6429  | 0.5213 | 5.5821 | -3.0413  |
+| 24 | \Delta MADRS ~ \Delta VOL_ctx.lh.entorhinal               | 0.4162  | 0.6779 | 5.6001 | -3.0022  |
+| 25 | \Delta MADRS ~ \Delta VOL_ctx.lh.fusiform                 | 1.6961  | 0.0921 | 5.3670 | -3.2505  |
+| 26 | \Delta MADRS ~ \Delta VOL_ctx.lh.inferiorparietal         | 0.1364  | 0.8917 | 5.3652 | -2.9423  |
+| 27 | \Delta MADRS ~ \Delta VOL_ctx.lh.inferiortemporal         | 0.2425  | 0.8088 | 5.4837 | -2.9730  |
+| 28 | \Delta MADRS ~ \Delta VOL_ctx.lh.isthmuscingulate         | 0.2110  | 0.8332 | 5.5711 | -2.9383  |
+| 29 | \Delta MADRS ~ \Delta VOL_ctx.lh.lateraloccipital         | 0.7252  | 0.4695 | 5.3551 | -3.0336  |
+| 30 | \Delta MADRS ~ \Delta VOL_ctx.lh.lateralorbitofrontal     | -0.5301 | 0.5969 | 5.5877 | -2.8830  |
+| 31 | \Delta MADRS ~ \Delta VOL_ctx.lh.lingual                  | 1.2153  | 0.2263 | 5.4860 | -3.1695  |
+| 32 | \Delta MADRS ~ \Delta VOL_ctx.lh.medialorbitofrontal      | -0.3501 | 0.7268 | 5.5881 | -2.9271  |
+| 33 | \Delta MADRS ~ \Delta VOL_ctx.lh.middletemporal           | -0.6038 | 0.5469 | 5.6239 | -2.8140  |
+| 34 | \Delta MADRS ~ \Delta VOL_ctx.lh.parahippocampal          | 1.5379  | 0.1263 | 5.3899 | -3.2626  |
+| 35 | \Delta MADRS ~ \Delta VOL_ctx.lh.paracentral              | 0.3763  | 0.7072 | 5.4862 | -2.9448  |
+| 36 | \Delta MADRS ~ \Delta VOL_ctx.lh.parsopercularis          | -0.4156 | 0.6783 | 5.6035 | -2.8779  |
+| 37 | \Delta MADRS ~ \Delta VOL_ctx.lh.parsorbitalis            | -1.0305 | 0.3045 | 5.5172 | -2.8969  |
+| 38 | \Delta MADRS ~ \Delta VOL_ctx.lh.parstriangularis         | -1.2208 | 0.2242 | 5.5629 | -2.6377  |
+| 39 | \Delta MADRS ~ \Delta VOL_ctx.lh.pericalcarine            | 0.7751  | 0.4396 | 5.5888 | -3.0587  |
+| 40 | \Delta MADRS ~ \Delta VOL_ctx.lh.postcentral              | -1.0000 | 0.3190 | 5.4727 | -2.6996  |
+| 41 | \Delta MADRS ~ \Delta VOL_ctx.lh.posteriorcingulate       | 0.5498  | 0.5833 | 5.4460 | -3.0158  |
+| 42 | \Delta MADRS ~ \Delta VOL_ctx.lh.precentral               | -0.0495 | 0.9606 | 5.5712 | -2.9143  |
+| 43 | \Delta MADRS ~ \Delta VOL_ctx.lh.precuneus                | 0.3625  | 0.7175 | 5.4787 | -2.9521  |
+| 44 | \Delta MADRS ~ \Delta VOL_ctx.lh.rostralanteriorcingulate | -0.1290 | 0.8975 | 5.5730 | -2.9618  |
+| 45 | \Delta MADRS ~ \Delta VOL_ctx.lh.rostralmiddlefrontal     | -1.9889 | 0.0487 | 5.1060 | -2.7949  |
+| 46 | \Delta MADRS ~ \Delta VOL_ctx.lh.superiorfrontal          | -0.3027 | 0.7626 | 5.5862 | -2.9033  |
+| 47 | \Delta MADRS ~ \Delta VOL_ctx.lh.superiorparietal         | -0.0438 | 0.9651 | 5.4356 | -2.8571  |
+| 48 | \Delta MADRS ~ \Delta VOL_ctx.lh.superiortemporal         | -0.3779 | 0.7061 | 5.5151 | -2.8940  |
+| 49 | \Delta MADRS ~ \Delta VOL_ctx.lh.supramarginal            | 0.1638  | 0.8702 | 5.5116 | -2.9469  |
+| 50 | \Delta MADRS ~ \Delta VOL_ctx.lh.frontalpole              | -1.0660 | 0.2882 | 5.6368 | -2.9350  |
+| 51 | \Delta MADRS ~ \Delta VOL_ctx.lh.temporalpole             | -0.0468 | 0.9627 | 5.5854 | -2.9437  |
+| 52 | \Delta MADRS ~ \Delta VOL_ctx.lh.transversetemporal       | 0.2540  | 0.7999 | 5.5916 | -2.9687  |
+| 53 | \Delta MADRS ~ \Delta VOL_ctx.rh.bankssts                 | 0.9053  | 0.3668 | 5.0801 | -3.1088  |
+| 54 | \Delta MADRS ~ \Delta VOL_ctx.rh.caudalanteriorcingulate  | 0.3475  | 0.7288 | 5.2346 | -2.9811  |
+| 55 | \Delta MADRS ~ \Delta VOL_ctx.rh.caudalmiddlefrontal      | -1.0823 | 0.2809 | 5.6919 | -2.7464  |
+| 56 | \Delta MADRS ~ \Delta VOL_ctx.rh.cuneus                   | 1.8884  | 0.0610 | 5.3569 | -3.3128  |
+| 57 | \Delta MADRS ~ \Delta VOL_ctx.rh.entorhinal               | 0.0560  | 0.9554 | 5.5400 | -2.9105  |
+| 58 | \Delta MADRS ~ \Delta VOL_ctx.rh.fusiform                 | 1.8334  | 0.0688 | 4.8882 | -3.4592  |
+| 59 | \Delta MADRS ~ \Delta VOL_ctx.rh.inferiorparietal         | 0.5439  | 0.5874 | 5.0947 | -2.9941  |
+| 60 | \Delta MADRS ~ \Delta VOL_ctx.rh.inferiortemporal         | 1.3208  | 0.1887 | 5.0209 | -3.2240  |
+| 61 | \Delta MADRS ~ \Delta VOL_ctx.rh.isthmuscingulate         | -0.3354 | 0.7378 | 5.5933 | -2.9160  |
+| 62 | \Delta MADRS ~ \Delta VOL_ctx.rh.lateraloccipital         | 0.8522  | 0.3956 | 5.3702 | -3.0514  |
+| 63 | \Delta MADRS ~ \Delta VOL_ctx.rh.lateralorbitofrontal     | -0.3644 | 0.7161 | 5.5981 | -2.8076  |
+| 64 | \Delta MADRS ~ \Delta VOL_ctx.rh.lingual                  | 1.4913  | 0.1381 | 5.4989 | -3.2735  |
+| 65 | \Delta MADRS ~ \Delta VOL_ctx.rh.medialorbitofrontal      | -0.7994 | 0.4254 | 5.6489 | -2.7635  |
+| 66 | \Delta MADRS ~ \Delta VOL_ctx.rh.middletemporal           | -0.2340 | 0.8153 | 5.3303 | -2.8169  |
+| 67 | \Delta MADRS ~ \Delta VOL_ctx.rh.parahippocampal          | 0.9612  | 0.3381 | 5.3354 | -3.1011  |
+| 68 | \Delta MADRS ~ \Delta VOL_ctx.rh.paracentral              | -0.1723 | 0.8635 | 5.4405 | -2.8938  |
+| 69 | \Delta MADRS ~ \Delta VOL_ctx.rh.parsopercularis          | -1.2194 | 0.2247 | 5.7367 | -2.6122  |
+| 70 | \Delta MADRS ~ \Delta VOL_ctx.rh.parsorbitalis            | -0.4771 | 0.6340 | 5.5286 | -2.8337  |
+| 71 | \Delta MADRS ~ \Delta VOL_ctx.rh.parstriangularis         | -0.9698 | 0.3338 | 5.6854 | -2.7035  |
+| 72 | \Delta MADRS ~ \Delta VOL_ctx.rh.pericalcarine            | 0.6953  | 0.4880 | 5.5519 | -3.0529  |
+| 73 | \Delta MADRS ~ \Delta VOL_ctx.rh.postcentral              | -0.8104 | 0.4191 | 5.6535 | -2.7233  |
+| 74 | \Delta MADRS ~ \Delta VOL_ctx.rh.posteriorcingulate       | 0.2733  | 0.7850 | 5.3170 | -2.9835  |
+| 75 | \Delta MADRS ~ \Delta VOL_ctx.rh.precentral               | -0.5814 | 0.5619 | 5.6124 | -2.7227  |
+| 76 | \Delta MADRS ~ \Delta VOL_ctx.rh.precuneus                | 0.9170  | 0.3607 | 5.2108 | -3.0999  |
+| 77 | \Delta MADRS ~ \Delta VOL_ctx.rh.rostralanteriorcingulate | -0.2783 | 0.7812 | 5.5346 | -2.8761  |
+| 78 | \Delta MADRS ~ \Delta VOL_ctx.rh.rostralmiddlefrontal     | -1.9601 | 0.0520 | 5.7845 | -2.6038  |
+| 79 | \Delta MADRS ~ \Delta VOL_ctx.rh.superiorfrontal          | -0.5633 | 0.5741 | 5.5987 | -2.7686  |
+| 80 | \Delta MADRS ~ \Delta VOL_ctx.rh.superiorparietal         | -0.0981 | 0.9220 | 5.5139 | -2.9201  |
+| 81 | \Delta MADRS ~ \Delta VOL_ctx.rh.superiortemporal         | 0.2295  | 0.8188 | 5.2989 | -2.8918  |
+| 82 | \Delta MADRS ~ \Delta VOL_ctx.rh.supramarginal            | 0.5443  | 0.5871 | 5.0334 | -3.0211  |
+| 83 | \Delta MADRS ~ \Delta VOL_ctx.rh.frontalpole              | -0.6669 | 0.5059 | 5.6124 | -2.8353  |
+| 84 | \Delta MADRS ~ \Delta VOL_ctx.rh.temporalpole             | -0.1912 | 0.8486 | 5.5429 | -2.7693  |
+| 85 | \Delta MADRS ~ \Delta VOL_ctx.rh.transversetemporal       | 1.1493  | 0.2524 | 5.0365 | -3.1736  |
+
+
+** Supplementary Table 5
+#+BEGIN_SRC R :results output raw :exports results
+  library(ascii)
+  library(stringr)
+  mt<-read.csv('/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/Mixed_N156_dMADRS-EF+Age+ECTnum+Site.csv')[,c(2:5,7)]
+  mt$roi<-str_replace(mt$roi,'EF','\\\\Delta MADRS ~ EF')
+
+  colnames(mt)[c(2:5)]<-c('t_EF','p_EF','t_Age','t_ECTnum')
+  mt.asc<-ascii(mt, colnames=colnames(mt),digits=4,
+               caption="The relationship clinical response and EF across
+  individuals (\\Delta MADRS ~ EF + Age + ECTnum + Site)")
+
+  print(mt.asc,type="org")
+
+#+END_SRC
+
+#+RESULTS:
+#+CAPTION: The relationship clinical response and EF across individuals (\Delta MADRS ~ EF + Age + ECTnum + Site)
+|    | roi                                               | t_EF    | p_EF   | t_Age  | t_ECTnum |
+|----+---------------------------------------------------+---------+--------+--------+----------|
+| 1  | \Delta MADRS ~ EF_Left.Cerebellum.Cortex          | 1.3516  | 0.1787 | 5.3362 | -2.9932  |
+| 2  | \Delta MADRS ~ EF_Left.Thalamus.Proper            | 0.8783  | 0.3813 | 5.6445 | -3.0320  |
+| 3  | \Delta MADRS ~ EF_Left.Caudate                    | 0.4661  | 0.6419 | 5.5098 | -2.9904  |
+| 4  | \Delta MADRS ~ EF_Left.Putamen                    | 0.8759  | 0.3826 | 5.6312 | -3.0171  |
+| 5  | \Delta MADRS ~ EF_Left.Pallidum                   | 1.1551  | 0.2500 | 5.7127 | -3.0332  |
+| 6  | \Delta MADRS ~ EF_Brain.Stem                      | 0.8996  | 0.3699 | 5.5420 | -2.9615  |
+| 7  | \Delta MADRS ~ EF_Left.Hippocampus                | 1.2165  | 0.2258 | 5.6648 | -2.9576  |
+| 8  | \Delta MADRS ~ EF_Left.Amygdala                   | 1.0714  | 0.2858 | 5.7090 | -2.9743  |
+| 9  | \Delta MADRS ~ EF_Left.Accumbens.area             | 0.8968  | 0.3713 | 5.5454 | -3.0450  |
+| 10 | \Delta MADRS ~ EF_Left.VentralDC                  | 0.8683  | 0.3867 | 5.6287 | -2.9751  |
+| 11 | \Delta MADRS ~ EF_Right.Cerebellum.Cortex         | 0.9875  | 0.3251 | 5.4111 | -2.9886  |
+| 12 | \Delta MADRS ~ EF_Right.Thalamus.Proper           | 0.5893  | 0.5566 | 5.4818 | -3.0056  |
+| 13 | \Delta MADRS ~ EF_Right.Caudate                   | 0.6738  | 0.5016 | 5.3063 | -2.9863  |
+| 14 | \Delta MADRS ~ EF_Right.Putamen                   | 0.6475  | 0.5184 | 5.4451 | -2.9704  |
+| 15 | \Delta MADRS ~ EF_Right.Pallidum                  | 0.5802  | 0.5627 | 5.4664 | -2.9926  |
+| 16 | \Delta MADRS ~ EF_Right.Hippocampus               | 0.6835  | 0.4954 | 5.2478 | -2.9474  |
+| 17 | \Delta MADRS ~ EF_Right.Amygdala                  | 0.3874  | 0.6990 | 5.4204 | -2.9439  |
+| 18 | \Delta MADRS ~ EF_Right.Accumbens.area            | 0.3876  | 0.6989 | 5.0600 | -2.9816  |
+| 19 | \Delta MADRS ~ EF_Right.VentralDC                 | 0.6604  | 0.5101 | 5.4074 | -2.9732  |
+| 20 | \Delta MADRS ~ EF_ctx.lh.bankssts                 | 0.8611  | 0.3907 | 5.6521 | -2.9588  |
+| 21 | \Delta MADRS ~ EF_ctx.lh.caudalanteriorcingulate  | 0.8251  | 0.4107 | 5.5545 | -3.0185  |
+| 22 | \Delta MADRS ~ EF_ctx.lh.caudalmiddlefrontal      | 1.7234  | 0.0870 | 5.5849 | -3.0935  |
+| 23 | \Delta MADRS ~ EF_ctx.lh.cuneus                   | 1.1248  | 0.2626 | 5.5896 | -2.9989  |
+| 24 | \Delta MADRS ~ EF_ctx.lh.entorhinal               | 0.9818  | 0.3279 | 5.1629 | -3.0469  |
+| 25 | \Delta MADRS ~ EF_ctx.lh.fusiform                 | 0.7246  | 0.4699 | 5.3341 | -2.9969  |
+| 26 | \Delta MADRS ~ EF_ctx.lh.inferiorparietal         | 1.2372  | 0.2181 | 5.6178 | -3.0306  |
+| 27 | \Delta MADRS ~ EF_ctx.lh.inferiortemporal         | 0.7907  | 0.4304 | 5.6349 | -2.9838  |
+| 28 | \Delta MADRS ~ EF_ctx.lh.isthmuscingulate         | 1.2497  | 0.2135 | 5.5542 | -3.0068  |
+| 29 | \Delta MADRS ~ EF_ctx.lh.lateraloccipital         | 0.6946  | 0.4885 | 5.5630 | -2.9939  |
+| 30 | \Delta MADRS ~ EF_ctx.lh.lateralorbitofrontal     | 1.2830  | 0.2016 | 5.6728 | -2.9776  |
+| 31 | \Delta MADRS ~ EF_ctx.lh.lingual                  | -0.0992 | 0.9211 | 5.4741 | -2.9728  |
+| 32 | \Delta MADRS ~ EF_ctx.lh.medialorbitofrontal      | 1.0597  | 0.2911 | 5.4500 | -2.9399  |
+| 33 | \Delta MADRS ~ EF_ctx.lh.middletemporal           | 1.3588  | 0.1764 | 5.7274 | -3.0252  |
+| 34 | \Delta MADRS ~ EF_ctx.lh.parahippocampal          | 1.0622  | 0.2900 | 5.2664 | -2.9874  |
+| 35 | \Delta MADRS ~ EF_ctx.lh.paracentral              | 1.5686  | 0.1190 | 5.3424 | -3.0830  |
+| 36 | \Delta MADRS ~ EF_ctx.lh.parsopercularis          | 0.8736  | 0.3838 | 5.6654 | -2.9925  |
+| 37 | \Delta MADRS ~ EF_ctx.lh.parsorbitalis            | 0.1145  | 0.9090 | 5.2936 | -2.9698  |
+| 38 | \Delta MADRS ~ EF_ctx.lh.parstriangularis         | 0.6089  | 0.5436 | 5.6063 | -2.9876  |
+| 39 | \Delta MADRS ~ EF_ctx.lh.pericalcarine            | -0.1227 | 0.9025 | 5.5874 | -2.9741  |
+| 40 | \Delta MADRS ~ EF_ctx.lh.postcentral              | 1.5423  | 0.1252 | 5.4710 | -3.0388  |
+| 41 | \Delta MADRS ~ EF_ctx.lh.posteriorcingulate       | 1.7234  | 0.0870 | 4.7193 | -2.9849  |
+| 42 | \Delta MADRS ~ EF_ctx.lh.precentral               | 1.3961  | 0.1649 | 5.5618 | -3.0584  |
+| 43 | \Delta MADRS ~ EF_ctx.lh.precuneus                | 1.7322  | 0.0854 | 5.1261 | -3.0170  |
+| 44 | \Delta MADRS ~ EF_ctx.lh.rostralanteriorcingulate | 0.6893  | 0.4918 | 5.6371 | -2.9984  |
+| 45 | \Delta MADRS ~ EF_ctx.lh.rostralmiddlefrontal     | 1.0314  | 0.3041 | 5.7001 | -2.9903  |
+| 46 | \Delta MADRS ~ EF_ctx.lh.superiorfrontal          | 1.7343  | 0.0851 | 5.4624 | -3.0974  |
+| 47 | \Delta MADRS ~ EF_ctx.lh.superiorparietal         | 1.8563  | 0.0655 | 5.3965 | -3.1262  |
+| 48 | \Delta MADRS ~ EF_ctx.lh.superiortemporal         | 1.2854  | 0.2008 | 5.7506 | -3.0322  |
+| 49 | \Delta MADRS ~ EF_ctx.lh.supramarginal            | 0.9368  | 0.3505 | 5.6569 | -2.9983  |
+| 50 | \Delta MADRS ~ EF_ctx.lh.frontalpole              | 1.5205  | 0.1306 | 5.8005 | -2.9350  |
+| 51 | \Delta MADRS ~ EF_ctx.lh.temporalpole             | 0.0839  | 0.9333 | 5.5167 | -2.9689  |
+| 52 | \Delta MADRS ~ EF_ctx.lh.transversetemporal       | 1.0350  | 0.3024 | 5.6356 | -2.9753  |
+| 53 | \Delta MADRS ~ EF_ctx.rh.bankssts                 | 0.2089  | 0.8348 | 5.5736 | -2.9477  |
+| 54 | \Delta MADRS ~ EF_ctx.rh.caudalanteriorcingulate  | 1.3109  | 0.1920 | 5.5031 | -3.0585  |
+| 55 | \Delta MADRS ~ EF_ctx.rh.caudalmiddlefrontal      | 0.9931  | 0.3224 | 5.3116 | -3.0101  |
+| 56 | \Delta MADRS ~ EF_ctx.rh.cuneus                   | 1.0257  | 0.3068 | 5.5313 | -2.9757  |
+| 57 | \Delta MADRS ~ EF_ctx.rh.entorhinal               | 0.3188  | 0.7503 | 5.1370 | -2.9683  |
+| 58 | \Delta MADRS ~ EF_ctx.rh.fusiform                 | 0.0353  | 0.9719 | 5.3492 | -2.9627  |
+| 59 | \Delta MADRS ~ EF_ctx.rh.inferiorparietal         | 0.4416  | 0.6594 | 5.5409 | -2.9719  |
+| 60 | \Delta MADRS ~ EF_ctx.rh.inferiortemporal         | 0.0980  | 0.9220 | 5.5216 | -2.9687  |
+| 61 | \Delta MADRS ~ EF_ctx.rh.isthmuscingulate         | 1.1468  | 0.2534 | 5.5553 | -3.0096  |
+| 62 | \Delta MADRS ~ EF_ctx.rh.lateraloccipital         | 1.3549  | 0.1776 | 5.5079 | -2.9649  |
+| 63 | \Delta MADRS ~ EF_ctx.rh.lateralorbitofrontal     | 0.1181  | 0.9061 | 5.4682 | -2.9482  |
+| 64 | \Delta MADRS ~ EF_ctx.rh.lingual                  | 0.4466  | 0.6558 | 5.4910 | -2.9775  |
+| 65 | \Delta MADRS ~ EF_ctx.rh.medialorbitofrontal      | 0.8851  | 0.3776 | 5.1102 | -2.9038  |
+| 66 | \Delta MADRS ~ EF_ctx.rh.middletemporal           | -0.1713 | 0.8642 | 5.5875 | -2.9728  |
+| 67 | \Delta MADRS ~ EF_ctx.rh.parahippocampal          | -0.0533 | 0.9576 | 5.4170 | -2.9421  |
+| 68 | \Delta MADRS ~ EF_ctx.rh.paracentral              | 1.4722  | 0.1432 | 5.2359 | -3.0446  |
+| 69 | \Delta MADRS ~ EF_ctx.rh.parsopercularis          | 0.4057  | 0.6856 | 5.5058 | -2.9625  |
+| 70 | \Delta MADRS ~ EF_ctx.rh.parsorbitalis            | -1.5217 | 0.1303 | 4.4952 | -3.2479  |
+| 71 | \Delta MADRS ~ EF_ctx.rh.parstriangularis         | 0.0523  | 0.9584 | 5.5856 | -2.9713  |
+| 72 | \Delta MADRS ~ EF_ctx.rh.pericalcarine            | 0.8017  | 0.4241 | 5.5964 | -2.9479  |
+| 73 | \Delta MADRS ~ EF_ctx.rh.postcentral              | 0.8949  | 0.3723 | 5.2388 | -3.0063  |
+| 74 | \Delta MADRS ~ EF_ctx.rh.posteriorcingulate       | 1.8661  | 0.0641 | 4.5850 | -2.9572  |
+| 75 | \Delta MADRS ~ EF_ctx.rh.precentral               | 0.4125  | 0.6806 | 5.3439 | -2.9885  |
+| 76 | \Delta MADRS ~ EF_ctx.rh.precuneus                | 1.5202  | 0.1307 | 5.1634 | -2.9922  |
+| 77 | \Delta MADRS ~ EF_ctx.rh.rostralanteriorcingulate | 0.7513  | 0.4537 | 5.6464 | -2.9519  |
+| 78 | \Delta MADRS ~ EF_ctx.rh.rostralmiddlefrontal     | 0.2203  | 0.8259 | 5.5770 | -2.9690  |
+| 79 | \Delta MADRS ~ EF_ctx.rh.superiorfrontal          | 1.5058  | 0.1344 | 5.3401 | -3.1130  |
+| 80 | \Delta MADRS ~ EF_ctx.rh.superiorparietal         | 1.1193  | 0.2649 | 5.3231 | -3.0022  |
+| 81 | \Delta MADRS ~ EF_ctx.rh.superiortemporal         | 0.5845  | 0.5598 | 5.4082 | -2.9776  |
+| 82 | \Delta MADRS ~ EF_ctx.rh.supramarginal            | 0.5194  | 0.6043 | 5.4970 | -2.9756  |
+| 83 | \Delta MADRS ~ EF_ctx.rh.frontalpole              | 1.6027  | 0.1112 | 5.5188 | -2.9469  |
+| 84 | \Delta MADRS ~ EF_ctx.rh.temporalpole             | -0.4055 | 0.6857 | 5.6013 | -2.9909  |
+| 85 | \Delta MADRS ~ EF_ctx.rh.transversetemporal       | 0.7262  | 0.4689 | 5.5628 | -2.9155  |
+
+
+** Supplementary Table 6 without confound :noexport:
+#+BEGIN_SRC R :results output raw :exports results
+  library(ascii)
+  library(stringr)
+  mt<-read.csv('/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/N156_dMADRS-EFwFDR.csv')[,c(2:5)]
+  mt$roi<-str_replace(mt$roi,'EF','\\\\Delta MADRS ~ EF')
+
+  colnames(mt)[c(2:4)]<-c('t_EF','p_EF','BH^EF_FDR')
+  mt.asc<-ascii(mt, colnames=colnames(mt),digits=4,
+               caption="The relationship clinical response and EF across
+  individuals (\\Delta MADRS ~ EF)")
+
+  print(mt.asc,type="org")
+
+#+END_SRC
+
+#+RESULTS:
+#+CAPTION: The relationship clinical response and EF across
+individuals (\Delta MADRS ~ EF)
+|    | roi                                               | t_EF    | p_EF   | BH^EF_FDR |
+|----+---------------------------------------------------+---------+--------+-----------|
+| 1  | \Delta MADRS ~ EF_Left.Cerebellum.Cortex          | 2.0187  | 0.0453 | 0.3530    |
+| 2  | \Delta MADRS ~ EF_Left.Thalamus.Proper            | 0.2348  | 0.8147 | 0.9233    |
+| 3  | \Delta MADRS ~ EF_Left.Caudate                    | -1.1309 | 0.2599 | 0.5021    |
+| 4  | \Delta MADRS ~ EF_Left.Putamen                    | -0.7879 | 0.4320 | 0.5922    |
+| 5  | \Delta MADRS ~ EF_Left.Pallidum                   | 0.2054  | 0.8375 | 0.9245    |
+| 6  | \Delta MADRS ~ EF_Brain.Stem                      | 1.1509  | 0.2516 | 0.4974    |
+| 7  | \Delta MADRS ~ EF_Left.Hippocampus                | 0.8985  | 0.3704 | 0.5724    |
+| 8  | \Delta MADRS ~ EF_Left.Amygdala                   | -0.0018 | 0.9986 | 0.9986    |
+| 9  | \Delta MADRS ~ EF_Left.Accumbens.area             | 0.8038  | 0.4228 | 0.5922    |
+| 10 | \Delta MADRS ~ EF_Left.VentralDC                  | 0.5858  | 0.5589 | 0.7091    |
+| 11 | \Delta MADRS ~ EF_Right.Cerebellum.Cortex         | 1.5834  | 0.1154 | 0.3634    |
+| 12 | \Delta MADRS ~ EF_Right.Thalamus.Proper           | 0.9544  | 0.3414 | 0.5475    |
+| 13 | \Delta MADRS ~ EF_Right.Caudate                   | 1.7073  | 0.0899 | 0.3530    |
+| 14 | \Delta MADRS ~ EF_Right.Putamen                   | 1.3416  | 0.1818 | 0.4380    |
+| 15 | \Delta MADRS ~ EF_Right.Pallidum                  | 1.1015  | 0.2725 | 0.5100    |
+| 16 | \Delta MADRS ~ EF_Right.Hippocampus               | 2.0280  | 0.0443 | 0.3530    |
+| 17 | \Delta MADRS ~ EF_Right.Amygdala                  | 1.4977  | 0.1363 | 0.4138    |
+| 18 | \Delta MADRS ~ EF_Right.Accumbens.area            | 2.1945  | 0.0297 | 0.3530    |
+| 19 | \Delta MADRS ~ EF_Right.VentralDC                 | 1.4640  | 0.1453 | 0.4199    |
+| 20 | \Delta MADRS ~ EF_ctx.lh.bankssts                 | -0.3402 | 0.7341 | 0.8455    |
+| 21 | \Delta MADRS ~ EF_ctx.lh.caudalanteriorcingulate  | 0.8038  | 0.4228 | 0.5922    |
+| 22 | \Delta MADRS ~ EF_ctx.lh.caudalmiddlefrontal      | 1.3298  | 0.1856 | 0.4380    |
+| 23 | \Delta MADRS ~ EF_ctx.lh.cuneus                   | 1.0436  | 0.2984 | 0.5158    |
+| 24 | \Delta MADRS ~ EF_ctx.lh.entorhinal               | 1.9766  | 0.0499 | 0.3530    |
+| 25 | \Delta MADRS ~ EF_ctx.lh.fusiform                 | 1.6062  | 0.1103 | 0.3607    |
+| 26 | \Delta MADRS ~ EF_ctx.lh.inferiorparietal         | 0.9641  | 0.3366 | 0.5475    |
+| 27 | \Delta MADRS ~ EF_ctx.lh.inferiortemporal         | 0.3619  | 0.7180 | 0.8455    |
+| 28 | \Delta MADRS ~ EF_ctx.lh.isthmuscingulate         | 1.2893  | 0.1993 | 0.4380    |
+| 29 | \Delta MADRS ~ EF_ctx.lh.lateraloccipital         | 0.7392  | 0.4609 | 0.6219    |
+| 30 | \Delta MADRS ~ EF_ctx.lh.lateralorbitofrontal     | 0.9012  | 0.3689 | 0.5724    |
+| 31 | \Delta MADRS ~ EF_ctx.lh.lingual                  | 1.0934  | 0.2760 | 0.5100    |
+| 32 | \Delta MADRS ~ EF_ctx.lh.medialorbitofrontal      | 1.6548  | 0.1001 | 0.3530    |
+| 33 | \Delta MADRS ~ EF_ctx.lh.middletemporal           | 0.5919  | 0.5548 | 0.7091    |
+| 34 | \Delta MADRS ~ EF_ctx.lh.parahippocampal          | 2.0102  | 0.0462 | 0.3530    |
+| 35 | \Delta MADRS ~ EF_ctx.lh.paracentral              | 1.6410  | 0.1029 | 0.3530    |
+| 36 | \Delta MADRS ~ EF_ctx.lh.parsopercularis          | 0.0712  | 0.9434 | 0.9661    |
+| 37 | \Delta MADRS ~ EF_ctx.lh.parsorbitalis            | -1.6490 | 0.1013 | 0.3530    |
+| 38 | \Delta MADRS ~ EF_ctx.lh.parstriangularis         | -0.5335 | 0.5945 | 0.7323    |
+| 39 | \Delta MADRS ~ EF_ctx.lh.pericalcarine            | 0.2059  | 0.8371 | 0.9245    |
+| 40 | \Delta MADRS ~ EF_ctx.lh.postcentral              | 1.7415  | 0.0837 | 0.3530    |
+| 41 | \Delta MADRS ~ EF_ctx.lh.posteriorcingulate       | 2.9618  | 0.0036 | 0.1513    |
+| 42 | \Delta MADRS ~ EF_ctx.lh.precentral               | 1.2845  | 0.2010 | 0.4380    |
+| 43 | \Delta MADRS ~ EF_ctx.lh.precuneus                | 1.4511  | 0.1489 | 0.4199    |
+| 44 | \Delta MADRS ~ EF_ctx.lh.rostralanteriorcingulate | -0.1401 | 0.8888 | 0.9563    |
+| 45 | \Delta MADRS ~ EF_ctx.lh.rostralmiddlefrontal     | -0.0831 | 0.9339 | 0.9661    |
+| 46 | \Delta MADRS ~ EF_ctx.lh.superiorfrontal          | 1.2621  | 0.2089 | 0.4402    |
+| 47 | \Delta MADRS ~ EF_ctx.lh.superiorparietal         | 1.9921  | 0.0482 | 0.3530    |
+| 48 | \Delta MADRS ~ EF_ctx.lh.superiortemporal         | 0.1687  | 0.8663 | 0.9440    |
+| 49 | \Delta MADRS ~ EF_ctx.lh.supramarginal            | 0.3719  | 0.7105 | 0.8455    |
+| 50 | \Delta MADRS ~ EF_ctx.lh.frontalpole              | 0.5969  | 0.5515 | 0.7091    |
+| 51 | \Delta MADRS ~ EF_ctx.lh.temporalpole             | 0.5724  | 0.5679 | 0.7099    |
+| 52 | \Delta MADRS ~ EF_ctx.lh.transversetemporal       | -0.8330 | 0.4062 | 0.5922    |
+| 53 | \Delta MADRS ~ EF_ctx.rh.bankssts                 | 0.6319  | 0.5284 | 0.7018    |
+| 54 | \Delta MADRS ~ EF_ctx.rh.caudalanteriorcingulate  | 1.3759  | 0.1709 | 0.4380    |
+| 55 | \Delta MADRS ~ EF_ctx.rh.caudalmiddlefrontal      | 1.7846  | 0.0764 | 0.3530    |
+| 56 | \Delta MADRS ~ EF_ctx.rh.cuneus                   | 1.2526  | 0.2123 | 0.4402    |
+| 57 | \Delta MADRS ~ EF_ctx.rh.entorhinal               | 2.1299  | 0.0348 | 0.3530    |
+| 58 | \Delta MADRS ~ EF_ctx.rh.fusiform                 | 1.7119  | 0.0890 | 0.3530    |
+| 59 | \Delta MADRS ~ EF_ctx.rh.inferiorparietal         | 0.7931  | 0.4290 | 0.5922    |
+| 60 | \Delta MADRS ~ EF_ctx.rh.inferiortemporal         | 0.8641  | 0.3889 | 0.5903    |
+| 61 | \Delta MADRS ~ EF_ctx.rh.isthmuscingulate         | 1.1737  | 0.2424 | 0.4906    |
+| 62 | \Delta MADRS ~ EF_ctx.rh.lateraloccipital         | 1.6365  | 0.1038 | 0.3530    |
+| 63 | \Delta MADRS ~ EF_ctx.rh.lateralorbitofrontal     | 1.3512  | 0.1787 | 0.4380    |
+| 64 | \Delta MADRS ~ EF_ctx.rh.lingual                  | 1.0162  | 0.3112 | 0.5186    |
+| 65 | \Delta MADRS ~ EF_ctx.rh.medialorbitofrontal      | 2.5152  | 0.0130 | 0.2753    |
+| 66 | \Delta MADRS ~ EF_ctx.rh.middletemporal           | -0.0983 | 0.9218 | 0.9661    |
+| 67 | \Delta MADRS ~ EF_ctx.rh.parahippocampal          | 1.2959  | 0.1970 | 0.4380    |
+| 68 | \Delta MADRS ~ EF_ctx.rh.paracentral              | 2.2035  | 0.0291 | 0.3530    |
+| 69 | \Delta MADRS ~ EF_ctx.rh.parsopercularis          | 1.0327  | 0.3034 | 0.5158    |
+| 70 | \Delta MADRS ~ EF_ctx.rh.parsorbitalis            | -2.8075 | 0.0057 | 0.1604    |
+| 71 | \Delta MADRS ~ EF_ctx.rh.parstriangularis         | -0.0547 | 0.9564 | 0.9678    |
+| 72 | \Delta MADRS ~ EF_ctx.rh.pericalcarine            | 0.8297  | 0.4080 | 0.5922    |
+| 73 | \Delta MADRS ~ EF_ctx.rh.postcentral              | 1.9125  | 0.0577 | 0.3530    |
+| 74 | \Delta MADRS ~ EF_ctx.rh.posteriorcingulate       | 2.9942  | 0.0032 | 0.1513    |
+| 75 | \Delta MADRS ~ EF_ctx.rh.precentral               | 1.4359  | 0.1531 | 0.4199    |
+| 76 | \Delta MADRS ~ EF_ctx.rh.precuneus                | 1.7473  | 0.0827 | 0.3530    |
+| 77 | \Delta MADRS ~ EF_ctx.rh.rostralanteriorcingulate | 0.1195  | 0.9051 | 0.9616    |
+| 78 | \Delta MADRS ~ EF_ctx.rh.rostralmiddlefrontal     | 0.4001  | 0.6896 | 0.8374    |
+| 79 | \Delta MADRS ~ EF_ctx.rh.superiorfrontal          | 1.8392  | 0.0679 | 0.3530    |
+| 80 | \Delta MADRS ~ EF_ctx.rh.superiorparietal         | 1.8661  | 0.0640 | 0.3530    |
+| 81 | \Delta MADRS ~ EF_ctx.rh.superiortemporal         | 1.4039  | 0.1624 | 0.4314    |
+| 82 | \Delta MADRS ~ EF_ctx.rh.supramarginal            | 1.0408  | 0.2997 | 0.5158    |
+| 83 | \Delta MADRS ~ EF_ctx.rh.frontalpole              | 1.8559  | 0.0654 | 0.3530    |
+| 84 | \Delta MADRS ~ EF_ctx.rh.temporalpole             | 0.3377  | 0.7361 | 0.8455    |
+| 85 | \Delta MADRS ~ EF_ctx.rh.transversetemporal       | 1.0770  | 0.2832 | 0.5122    |
+
+
+
+
+
+
+
 
 
