@@ -696,9 +696,12 @@ expected since age correlates with TotBrainVolume pretty much)
 #+END_SRC
 
 #+RESULTS:
+:1
+
 Interestingly no results here either. I did the whole analysis with
 BaselineTotalBrain volume as control for confound, very similar results. (as
 expected since age correlates with TotBrainVolume pretty much)
+
 **** Calculating mixed effect \Delta MADRS ~ EF + Age + ECTnumber + Site + medication
 #+BEGIN_SRC R :session ECTanal
   myres3v3.s<-matrix(NA,length(myroi.names),6)
@@ -725,9 +728,11 @@ expected since age correlates with TotBrainVolume pretty much)
 #+END_SRC
 
 #+RESULTS:
+:1
 Interestingly no results here either. I did the whole analysis with
 BaselineTotalBrain volume as control for confound, very similar results. (as
 expected since age correlates with TotBrainVolume pretty much)
+
 **** Calculating mixed effect \Delta MADRS ~ EF + BaselineVolume + ECTnumber + Site
 #+BEGIN_SRC R :session ECTanal
   myres3vbv.s<-matrix(NA,length(myroi.names),6)
