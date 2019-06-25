@@ -14,7 +14,7 @@
     geom_point()
   #ind.fd<-which(fd$madrs_hdrs_percentage_cahnge> (-5))
   ind.fd<-which(!is.na(fd$Right.Amygdala.baseline.3))
-  code<-cbind(c('AL','DC','EM','MS','OS','RB','ZV'),c('Narr et al.','Abbott et al.','Dols et al.','Redlich et al.','Argyelan et al.','Oltedal et al.','Emsell et al.'))  
+  code<-cbind(c('AL','DC','EM','MS','OS','RB','ZV'),c('','','','','','',''))  
   length(ind.fd)
   myroi.names<-colnames(fd)[grep("EF_",colnames(fd))][c(5:9,12:14,16:17,24:32,44:76,79:111)]
   myvol.names<-c()
