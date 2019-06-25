@@ -14,7 +14,7 @@
     geom_point()
   #ind.fd<-which(fd$madrs_hdrs_percentage_cahnge> (-5))
   ind.fd<-which(!is.na(fd$Right.Amygdala.baseline.3))
-
+  code<-cbind(c('AL','DC','EM','MS','OS','RB','ZV'),c('Narr et al.','Abbott et al.','Dols et al.','Redlich et al.','Argyelan et al.','Oltedal et al.','Emsell et al.'))  
   length(ind.fd)
   myroi.names<-colnames(fd)[grep("EF_",colnames(fd))][c(5:9,12:14,16:17,24:32,44:76,79:111)]
   myvol.names<-c()
@@ -61,94 +61,31 @@
       geom_point()
 
   fd$antidepressants.3[ind.fd]
+  summary(fd$diagnosis.1)
+  #table for site , number age, sd, baseline, average improvement
+  it<-which(colnames(fd)%in%c('Site.1','Age.1','madrs_hdrs_conversion.1','madrs_hdrs_percentage_cahnge'))
+  t1<-aggregate(.~Site.1,FUN=mean,data = fd[ind.fd,it])
+  t2<-aggregate(.~Site.1,FUN=sd,data = fd[ind.fd,it])
+  t3<-table(fd[ind.fd,it[1]])
+  sum(t3)
+  #tt<-cbind(t1,t2,t3)[,c(1,10,2,6,3,7,4,8)]
+  tt<-cbind(t1,t2,t3)[,c(1,10,2,6,3,4)]
+  colnames(tt)<-c('Site','N','Age mean','Age sd','Baseline MADRS','MADRS change')
+
+  tt$Site<-code[which(code[,1]%in%tt$Site),2]
+  tt$'MADRS change'<-100*tt$'MADRS change'
+  write.csv(tt,'/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/N156_Site_Summary.csv')
+  tt
 #+END_SRC
 
 #+RESULTS:
-| EF_Left.Cerebellum.Cortex          | volumechange_Left.Cerebellum.Cortex          |
-| EF_Left.Thalamus.Proper            | volumechange_Left.Thalamus.Proper            |
-| EF_Left.Caudate                    | volumechange_Left.Caudate                    |
-| EF_Left.Putamen                    | volumechange_Left.Putamen                    |
-| EF_Left.Pallidum                   | volumechange_Left.Pallidum                   |
-| EF_Brain.Stem                      | volumechange_Brain.Stem                      |
-| EF_Left.Hippocampus                | volumechange_Left.Hippocampus                |
-| EF_Left.Amygdala                   | volumechange_Left.Amygdala                   |
-| EF_Left.Accumbens.area             | volumechange_Left.Accumbens.area             |
-| EF_Left.VentralDC                  | volumechange_Left.VentralDC                  |
-| EF_Right.Cerebellum.Cortex         | volumechange_Right.Cerebellum.Cortex         |
-| EF_Right.Thalamus.Proper           | volumechange_Right.Thalamus.Proper           |
-| EF_Right.Caudate                   | volumechange_Right.Caudate                   |
-| EF_Right.Putamen                   | volumechange_Right.Putamen                   |
-| EF_Right.Pallidum                  | volumechange_Right.Pallidum                  |
-| EF_Right.Hippocampus               | volumechange_Right.Hippocampus               |
-| EF_Right.Amygdala                  | volumechange_Right.Amygdala                  |
-| EF_Right.Accumbens.area            | volumechange_Right.Accumbens.area            |
-| EF_Right.VentralDC                 | volumechange_Right.VentralDC                 |
-| EF_ctx.lh.bankssts                 | volumechange_ctx.lh.bankssts                 |
-| EF_ctx.lh.caudalanteriorcingulate  | volumechange_ctx.lh.caudalanteriorcingulate  |
-| EF_ctx.lh.caudalmiddlefrontal      | volumechange_ctx.lh.caudalmiddlefrontal      |
-| EF_ctx.lh.cuneus                   | volumechange_ctx.lh.cuneus                   |
-| EF_ctx.lh.entorhinal               | volumechange_ctx.lh.entorhinal               |
-| EF_ctx.lh.fusiform                 | volumechange_ctx.lh.fusiform                 |
-| EF_ctx.lh.inferiorparietal         | volumechange_ctx.lh.inferiorparietal         |
-| EF_ctx.lh.inferiortemporal         | volumechange_ctx.lh.inferiortemporal         |
-| EF_ctx.lh.isthmuscingulate         | volumechange_ctx.lh.isthmuscingulate         |
-| EF_ctx.lh.lateraloccipital         | volumechange_ctx.lh.lateraloccipital         |
-| EF_ctx.lh.lateralorbitofrontal     | volumechange_ctx.lh.lateralorbitofrontal     |
-| EF_ctx.lh.lingual                  | volumechange_ctx.lh.lingual                  |
-| EF_ctx.lh.medialorbitofrontal      | volumechange_ctx.lh.medialorbitofrontal      |
-| EF_ctx.lh.middletemporal           | volumechange_ctx.lh.middletemporal           |
-| EF_ctx.lh.parahippocampal          | volumechange_ctx.lh.parahippocampal          |
-| EF_ctx.lh.paracentral              | volumechange_ctx.lh.paracentral              |
-| EF_ctx.lh.parsopercularis          | volumechange_ctx.lh.parsopercularis          |
-| EF_ctx.lh.parsorbitalis            | volumechange_ctx.lh.parsorbitalis            |
-| EF_ctx.lh.parstriangularis         | volumechange_ctx.lh.parstriangularis         |
-| EF_ctx.lh.pericalcarine            | volumechange_ctx.lh.pericalcarine            |
-| EF_ctx.lh.postcentral              | volumechange_ctx.lh.postcentral              |
-| EF_ctx.lh.posteriorcingulate       | volumechange_ctx.lh.posteriorcingulate       |
-| EF_ctx.lh.precentral               | volumechange_ctx.lh.precentral               |
-| EF_ctx.lh.precuneus                | volumechange_ctx.lh.precuneus                |
-| EF_ctx.lh.rostralanteriorcingulate | volumechange_ctx.lh.rostralanteriorcingulate |
-| EF_ctx.lh.rostralmiddlefrontal     | volumechange_ctx.lh.rostralmiddlefrontal     |
-| EF_ctx.lh.superiorfrontal          | volumechange_ctx.lh.superiorfrontal          |
-| EF_ctx.lh.superiorparietal         | volumechange_ctx.lh.superiorparietal         |
-| EF_ctx.lh.superiortemporal         | volumechange_ctx.lh.superiortemporal         |
-| EF_ctx.lh.supramarginal            | volumechange_ctx.lh.supramarginal            |
-| EF_ctx.lh.frontalpole              | volumechange_ctx.lh.frontalpole              |
-| EF_ctx.lh.temporalpole             | volumechange_ctx.lh.temporalpole             |
-| EF_ctx.lh.transversetemporal       | volumechange_ctx.lh.transversetemporal       |
-| EF_ctx.rh.bankssts                 | volumechange_ctx.rh.bankssts                 |
-| EF_ctx.rh.caudalanteriorcingulate  | volumechange_ctx.rh.caudalanteriorcingulate  |
-| EF_ctx.rh.caudalmiddlefrontal      | volumechange_ctx.rh.caudalmiddlefrontal      |
-| EF_ctx.rh.cuneus                   | volumechange_ctx.rh.cuneus                   |
-| EF_ctx.rh.entorhinal               | volumechange_ctx.rh.entorhinal               |
-| EF_ctx.rh.fusiform                 | volumechange_ctx.rh.fusiform                 |
-| EF_ctx.rh.inferiorparietal         | volumechange_ctx.rh.inferiorparietal         |
-| EF_ctx.rh.inferiortemporal         | volumechange_ctx.rh.inferiortemporal         |
-| EF_ctx.rh.isthmuscingulate         | volumechange_ctx.rh.isthmuscingulate         |
-| EF_ctx.rh.lateraloccipital         | volumechange_ctx.rh.lateraloccipital         |
-| EF_ctx.rh.lateralorbitofrontal     | volumechange_ctx.rh.lateralorbitofrontal     |
-| EF_ctx.rh.lingual                  | volumechange_ctx.rh.lingual                  |
-| EF_ctx.rh.medialorbitofrontal      | volumechange_ctx.rh.medialorbitofrontal      |
-| EF_ctx.rh.middletemporal           | volumechange_ctx.rh.middletemporal           |
-| EF_ctx.rh.parahippocampal          | volumechange_ctx.rh.parahippocampal          |
-| EF_ctx.rh.paracentral              | volumechange_ctx.rh.paracentral              |
-| EF_ctx.rh.parsopercularis          | volumechange_ctx.rh.parsopercularis          |
-| EF_ctx.rh.parsorbitalis            | volumechange_ctx.rh.parsorbitalis            |
-| EF_ctx.rh.parstriangularis         | volumechange_ctx.rh.parstriangularis         |
-| EF_ctx.rh.pericalcarine            | volumechange_ctx.rh.pericalcarine            |
-| EF_ctx.rh.postcentral              | volumechange_ctx.rh.postcentral              |
-| EF_ctx.rh.posteriorcingulate       | volumechange_ctx.rh.posteriorcingulate       |
-| EF_ctx.rh.precentral               | volumechange_ctx.rh.precentral               |
-| EF_ctx.rh.precuneus                | volumechange_ctx.rh.precuneus                |
-| EF_ctx.rh.rostralanteriorcingulate | volumechange_ctx.rh.rostralanteriorcingulate |
-| EF_ctx.rh.rostralmiddlefrontal     | volumechange_ctx.rh.rostralmiddlefrontal     |
-| EF_ctx.rh.superiorfrontal          | volumechange_ctx.rh.superiorfrontal          |
-| EF_ctx.rh.superiorparietal         | volumechange_ctx.rh.superiorparietal         |
-| EF_ctx.rh.superiortemporal         | volumechange_ctx.rh.superiortemporal         |
-| EF_ctx.rh.supramarginal            | volumechange_ctx.rh.supramarginal            |
-| EF_ctx.rh.frontalpole              | volumechange_ctx.rh.frontalpole              |
-| EF_ctx.rh.temporalpole             | volumechange_ctx.rh.temporalpole             |
-| EF_ctx.rh.transversetemporal       | volumechange_ctx.rh.transversetemporal       |
+| Narr et al.     | 30 | 39.8666666666667 |  12.6810565570184 | 40.7333333333333 | 45.1245102874469 |
+| Abbott et al.   | 33 | 64.4848484848485 |  8.92720985289221 | 31.3606060606061 | 69.4801004068472 |
+| Dols et al.     | 16 |           73.625 |  12.4519074843977 |          29.5625 |  77.243936759454 |
+| Redlich et al.  | 23 | 46.8695652173913 |  9.19142064311797 | 29.9565217391304 | 43.1756262706063 |
+| Argyelan et al. |  2 |             62.5 | 0.707106781186548 |            36.75 | 32.0321069639204 |
+| Oltedal et al.  | 18 |             48.5 |  16.7691944455582 | 33.8333333333333 | 57.1151188612553 |
+| Emsell et al.   | 29 | 72.6551724137931 |  7.57475064214264 | 35.0689655172414 | 79.1303978601593 |
 I have checked results without obvious two outliers, but no difference. 
 #r/o EM and ZV outliers
 #ind.fd<-which(fd$madrs_hdrs_percentage_cahnge> (-0.25)) 
@@ -303,6 +240,30 @@ I have checked results without obvious two outliers, but no difference.
 I have checked results without obvious two outliers, but no difference. 
 #r/o EM and ZV outliers
 #ind.fd<-which(fd$madrs_hdrs_percentage_cahnge> (-0.25)) 
+**** Calculating EFinTotalVolume ~ Total Volume + Age
+#+BEGIN_SRC R :session ECTanal
+  #i<-1
+  sum<-0
+  wsum<-0
+  for (i in 1:dim(varnames)[1])
+  {
+   ef<-fd[ind.fd,grep(varnames[i,1],colnames(fd))]
+   baseline<-paste0(strsplit(as.character(varnames[i,2]),'_')[[1]][2],'.baseline.3')
+   vol<-fd[ind.fd,grep(baseline,colnames(fd))]
+   wsum<-wsum+(ef*vol)
+   sum<-sum+vol
+  }
+  fd$EFaverage<-NA
+  fd$EFaverage[ind.fd]<-(wsum/sum)
+   lm.1<-lm(EFaverage ~ WholeBrain.baseline.3 + Age.1,data=fd[ind.fd,])
+   lm.1<-lm(EFaverage ~ WholeBrain.baseline.3,data=fd[ind.fd,])
+   lm.1<-lm(WholeBrain.baseline.3 ~ Age.1,data=fd[ind.fd,])
+   #lm.1<-lme(EFaverage~WholeBrain.baseline.3+Age.1,data=fd[ind.fd,],random = ~1|Site.1, na.action = na.omit)
+   res<-summary(lm.1)
+   res
+#+END_SRC
+
+#+RESULTS:
 **** Calculating \Delta Volume ~ EF + Age + ECTnumber
 #+BEGIN_SRC R :session ECTanal
   myres1v3<-matrix(NA,length(myroi.names),6)
@@ -443,6 +404,43 @@ I have checked results without obvious two outliers, but no difference.
 #+END_SRC
 
 #+RESULTS: 
+**** Calculating mixed effect \Delta Volume ~ EF + BaslineVolume + ECTnumber + Site
+#+BEGIN_SRC R :session ECTanal
+  library(nlme)
+  myres1vbv.s<-matrix(NA,length(myroi.names),6)
+  for (i in 1:dim(varnames)[1])
+  {
+   bn<-substr(varnames[i,2],14,nchar(as.character(varnames[i,2])))#cut the volumechange from the begining
+   vn<-fd[ind.fd,grep(paste0(bn,'.baseline.3'),colnames(fd))]
+   ef<-fd[ind.fd,grep(varnames[i,1],colnames(fd))]
+   dvol<-fd[ind.fd,grep(varnames[i,2],colnames(fd))]
+   #lm.1<-lm(dvol~ef+Age.1+rul_number.1+Site.1,data=fd[ind.fd,])
+   lm.1<-lme(dvol~ef+vn+rul_number.1,data=fd[ind.fd,],random = ~1|Site.1, na.action = na.omit)
+   res<-summary(lm.1)
+   myres1vbv.s[i,1]<-res$tTable[2,4]
+   myres1vbv.s[i,2]<-res$tTable[2,5]
+   myres1vbv.s[i,3]<-res$tTable[3,4]
+   myres1vbv.s[i,4]<-res$tTable[3,5]
+   myres1vbv.s[i,5]<-res$tTable[4,4]
+   myres1vbv.s[i,6]<-res$tTable[4,5]
+  }
+
+  kiir<-data.frame(myroi.names,myres1vbv.s)
+  colnames(kiir)<-c('roi','tef','pef','tBasVol','pBasVol','tECTnum','pECTnum')
+  write.csv(kiir, '/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/Mixed_N156_Vol-EF+BasVol+ECTnum+Site.csv')
+
+  mytable<-data.frame(myroi.names,myres1vbv.s)
+  fdr<-p.adjust(myres1vbv.s[,2],method = 'fdr')#Benjamini & Hochberg 1995 FDR
+  #by<-p.adjust(myres1v3[,2],method = 'fdr')#Benjamini & Yekutieli 2001 FDR
+  holm<-p.adjust(myres1vbv.s[,2],method = 'holm')#Holm 1979 very strict FWE
+  fdr.res<-data.frame(mytable, fdr, holm)
+
+  colnames(fdr.res)<-c('roi','t_EF','p_EF','t_BasVol','p_BasVol','t_ECTnum','p_ECTnum','BH^EF_FDR','Holm^EF_FWE')
+  write.csv(fdr.res, '/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/Mixed_N151_dVol-EF+BasVol+ECTnum+Site_FDRcorrect.csv')
+  #write.csv(fdr.res, '/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/IQR_Mixed_N151_dVol-EF+Age+ECTnum+Site_FDRcorrect.csv')
+#+END_SRC
+
+#+RESULTS:
 **** Calculating \Delta MADRS ~ \Delta Volume + Age + ECTnum
 #+BEGIN_SRC R :session ECTanal
 myres2v3<-matrix(NA,length(myroi.names),6)
@@ -506,6 +504,7 @@ We did not expect too much here given Oltedal et al. 2018.
     dvol<-fd[ind.fd,grep(varnames[i,2],colnames(fd))]
     #lm.1<-lm(madrs_hdrs_percentage_cahnge~dvol+Age.1+rul_number.1+Site.1,data=fd[ind.fd,])
     lm.1<-lme(madrs_hdrs_percentage_cahnge~dvol+Age.1+rul_number.1,data=fd[ind.fd,],random=~1|Site.1, na.action=na.omit)
+    
     #lm.1<-lm(madrs_hdrs_percentage_cahnge~ef,data=fd[ind.fd,])
     res<-summary(lm.1)
     myres2v3.s[i,1]<-res$tTable[2,4]
@@ -554,28 +553,59 @@ We did not expect too much here given Oltedal et al. 2018.
 #+RESULTS:
 We did not expect too much here given Oltedal et al. 2018.
 
+**** Calculating mixed effect \Delta MADRS ~ \Delta Volume + BaselineVolume + ECTnum + Site
+#+BEGIN_SRC R :session ECTanal
+  myres2vbv.s<-matrix(NA,length(myroi.names),6)
+  for (i in 1:dim(varnames)[1])
+  {
+    bn<-substr(varnames[i,2],14,nchar(as.character(varnames[i,2])))#cut the volumechange from the begining
+    vn<-fd[ind.fd,grep(paste0(bn,'.baseline.3'),colnames(fd))]
+    ef<-fd[ind.fd,grep(varnames[i,1],colnames(fd))]
+    dvol<-fd[ind.fd,grep(varnames[i,2],colnames(fd))]
+    #lm.1<-lm(madrs_hdrs_percentage_cahnge~dvol+Age.1+rul_number.1+Site.1,data=fd[ind.fd,])
+    lm.1<-lme(madrs_hdrs_percentage_cahnge~dvol+vn+rul_number.1,data=fd[ind.fd,],random=~1|Site.1, na.action=na.omit)
+
+    #lm.1<-lm(madrs_hdrs_percentage_cahnge~ef,data=fd[ind.fd,])
+    res<-summary(lm.1)
+    myres2vbv.s[i,1]<-res$tTable[2,4]
+    myres2vbv.s[i,2]<-res$tTable[2,5]
+    myres2vbv.s[i,3]<-res$tTable[3,4]
+    myres2vbv.s[i,4]<-res$tTable[3,5]
+    myres2vbv.s[i,5]<-res$tTable[4,4]
+    myres2vbv.s[i,6]<-res$tTable[4,5]
+  }
+  kiir<-data.frame(myroi.names,myres2vbv.s)
+  colnames(kiir)<-c('roi','tvol','pvol','tBasVol','pBasVol','tECTnum','pECTnum')
+  write.csv(kiir, '/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/Mixed_N156_dMADRSperc-dVol+BasVol+ECTnum+Site.csv')
+
+  #does not need to do FDR (unfortunatelly)
+
+#+END_SRC
+#+RESULTS:
+We did not expect too much here given Oltedal et al. 2018.
+
 **** Calculating \Delta MADRS ~ EF + Age + ECTnumber
 #+BEGIN_SRC R :session ECTanal
-myres3v3<-matrix(NA,length(myroi.names),6)
-for (i in 1:dim(varnames)[1])
-{
-  ef<-fd[ind.fd,grep(varnames[i,1],colnames(fd))]
-  dvol<-fd[ind.fd,grep(varnames[i,2],colnames(fd))]
-  lm.1<-lm(madrs_hdrs_percentage_cahnge~ef+Age.1+rul_number.1,data=fd[ind.fd,])
-  #lm.1<-lm(madrs_hdrs_percentage_cahnge~ef,data=fd[ind.fd,])
-  res<-summary(lm.1)
-  myres3v3[i,1]<-res$coefficients[2,3]
-  myres3v3[i,2]<-res$coefficients[2,4]
-  myres3v3[i,3]<-res$coefficients[3,3]
-  myres3v3[i,4]<-res$coefficients[3,4]
-  myres3v3[i,5]<-res$coefficients[4,3]
-  myres3v3[i,6]<-res$coefficients[4,4]
-}
-kiir<-data.frame(myroi.names,myres3v3)
-colnames(kiir)<-c('roi','tef','pef','tAge','pAge','tECTnum','pECTnum')
-write.csv(kiir, '/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/N156_dMADRS-EF+Age+ECTnum.csv')
+  myres3v3<-matrix(NA,length(myroi.names),6)
+  for (i in 1:dim(varnames)[1])
+  {
+    ef<-fd[ind.fd,grep(varnames[i,1],colnames(fd))]
+    dvol<-fd[ind.fd,grep(varnames[i,2],colnames(fd))]
+    lm.1<-lm(madrs_hdrs_percentage_cahnge~ef+Age.1+rul_number.1,data=fd[ind.fd,])
+    #lm.1<-lm(madrs_hdrs_percentage_cahnge~ef,data=fd[ind.fd,])
+    res<-summary(lm.1)
+    myres3v3[i,1]<-res$coefficients[2,3]
+    myres3v3[i,2]<-res$coefficients[2,4]
+    myres3v3[i,3]<-res$coefficients[3,3]
+    myres3v3[i,4]<-res$coefficients[3,4]
+    myres3v3[i,5]<-res$coefficients[4,3]
+    myres3v3[i,6]<-res$coefficients[4,4]
+  }
+  kiir<-data.frame(myroi.names,myres3v3)
+  colnames(kiir)<-c('roi','tef','pef','tAge','pAge','tECTnum','pECTnum')
+  write.csv(kiir, '/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/N156_dMADRS-EF+Age+ECTnum.csv')
 
-#does not need to do FDR (unfortunatelly)
+  #does not need to do FDR (unfortunatelly)
 #+END_SRC
 
 #+RESULTS:
@@ -604,6 +634,36 @@ colnames(kiir)<-c('roi','tef','pef','tAge','pAge','tECTnum','pECTnum')
 write.csv(kiir, '/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/N156_dMADRS-EF+Age+ECTnum+Site.csv')
 
 #does not need to do FDR (unfortunatelly)
+#+END_SRC
+
+#+RESULTS:
+Interestingly no results here either. I did the whole analysis with
+BaselineTotalBrain volume as control for confound, very similar results. (as
+expected since age correlates with TotBrainVolume pretty much)
+**** Calculating \Delta MADRS ~ EF + BaselineVolume + ECTnumber
+#+BEGIN_SRC R :session ECTanal
+  myres3vbv<-matrix(NA,length(myroi.names),6)
+  for (i in 1:dim(varnames)[1])
+  {
+    bn<-substr(varnames[i,2],14,nchar(as.character(varnames[i,2])))#cut the volumechange from the begining
+    vn<-fd[ind.fd,grep(paste0(bn,'.baseline.3'),colnames(fd))]
+    ef<-fd[ind.fd,grep(varnames[i,1],colnames(fd))]
+    dvol<-fd[ind.fd,grep(varnames[i,2],colnames(fd))]
+    lm.1<-lm(madrs_hdrs_percentage_cahnge~ef+vn+rul_number.1,data=fd[ind.fd,])
+    #lm.1<-lm(madrs_hdrs_percentage_cahnge~ef,data=fd[ind.fd,])
+    res<-summary(lm.1)
+    myres3vbv[i,1]<-res$coefficients[2,3]
+    myres3vbv[i,2]<-res$coefficients[2,4]
+    myres3vbv[i,3]<-res$coefficients[3,3]
+    myres3vbv[i,4]<-res$coefficients[3,4]
+    myres3vbv[i,5]<-res$coefficients[4,3]
+    myres3vbv[i,6]<-res$coefficients[4,4]
+  }
+  kiir<-data.frame(myroi.names,myres3vbv)
+  colnames(kiir)<-c('roi','tef','pef','tbasVol','pbasVol','tECTnum','pECTnum')
+  write.csv(kiir, '/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/N156_dMADRS-EF+BaselineVolume+ECTnum.csv')
+
+  #does not need to do FDR (unfortunatelly)
 #+END_SRC
 
 #+RESULTS:
@@ -660,6 +720,68 @@ expected since age correlates with TotBrainVolume pretty much)
   kiir<-data.frame(myroi.names,myres3v3.s)
   colnames(kiir)<-c('roi','tef','pef','tAge','pAge','tECTnum','pECTnum')
   write.csv(kiir, '/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/Mixed_N156_dMADRS-EF+Age+ECTnum+Site+Med.csv')
+
+  #does not need to do FDR (unfortunatelly)
+#+END_SRC
+
+#+RESULTS:
+Interestingly no results here either. I did the whole analysis with
+BaselineTotalBrain volume as control for confound, very similar results. (as
+expected since age correlates with TotBrainVolume pretty much)
+**** Calculating mixed effect \Delta MADRS ~ EF + BaselineVolume + ECTnumber + Site
+#+BEGIN_SRC R :session ECTanal
+  myres3vbv.s<-matrix(NA,length(myroi.names),6)
+  for (i in 1:dim(varnames)[1])
+  {
+    bn<-substr(varnames[i,2],14,nchar(as.character(varnames[i,2])))#cut the volumechange from the begining
+    vn<-fd[ind.fd,grep(paste0(bn,'.baseline.3'),colnames(fd))]
+    ef<-fd[ind.fd,grep(varnames[i,1],colnames(fd))]
+    dvol<-fd[ind.fd,grep(varnames[i,2],colnames(fd))]
+    #lm.1<-lm(madrs_hdrs_percentage_cahnge~ef+Age.1+rul_number.1+Site.1,data=fd[ind.fd,])
+    lm.1<-lme(madrs_hdrs_percentage_cahnge~ef+vn+rul_number.1,data=fd[ind.fd,],random = ~1|Site.1, na.action = na.omit)
+    #lm.1<-lm(madrs_hdrs_percentage_cahnge~ef,data=fd[ind.fd,])
+    res<-summary(lm.1)
+    myres3vbv.s[i,1]<-res$tTable[2,4]
+    myres3vbv.s[i,2]<-res$tTable[2,5]
+    myres3vbv.s[i,3]<-res$tTable[3,4]
+    myres3vbv.s[i,4]<-res$tTable[3,5]
+    myres3vbv.s[i,5]<-res$tTable[4,4]
+    myres3vbv.s[i,6]<-res$tTable[4,5]
+  }
+  kiir<-data.frame(myroi.names,myres3vbv.s)
+  colnames(kiir)<-c('roi','tef','pef','tBasVol','pBasVol','tECTnum','pECTnum')
+  write.csv(kiir, '/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/Mixed_N156_dMADRS-EF+BasVol+ECTnum+Site.csv')
+
+  #does not need to do FDR (unfortunatelly)
+#+END_SRC
+
+#+RESULTS:
+Interestingly no results here either. I did the whole analysis with
+BaselineTotalBrain volume as control for confound, very similar results. (as
+expected since age correlates with TotBrainVolume pretty much)
+**** Calculating mixed effect Baselinevolume ~ Age + Site
+#+BEGIN_SRC R :session ECTanal
+  myresagevbv.s<-matrix(NA,length(myroi.names),2)
+  for (i in 1:dim(varnames)[1])
+  {
+    bn<-substr(varnames[i,2],14,nchar(as.character(varnames[i,2])))#cut the volumechange from the begining
+    vn<-fd[ind.fd,grep(paste0(bn,'.baseline.3'),colnames(fd))]
+    ef<-fd[ind.fd,grep(varnames[i,1],colnames(fd))]
+    dvol<-fd[ind.fd,grep(varnames[i,2],colnames(fd))]
+    #lm.1<-lm(madrs_hdrs_percentage_cahnge~ef+Age.1+rul_number.1+Site.1,data=fd[ind.fd,])
+    lm.1<-lme(vn~Age.1,data=fd[ind.fd,],random = ~1|Site.1, na.action = na.omit)
+    #lm.1<-lm(madrs_hdrs_percentage_cahnge~ef,data=fd[ind.fd,])
+    res<-summary(lm.1)
+    myresagevbv.s[i,1]<-res$tTable[2,4]
+    myresagevbv.s[i,2]<-res$tTable[2,5]
+    #myresagevbv.s[i,3]<-res$tTable[3,4]
+    #myresagevbv.s[i,4]<-res$tTable[3,5]
+    #myresagevbv.s[i,5]<-res$tTable[4,4]
+    #myresagevbv.s[i,6]<-res$tTable[4,5]
+  }
+  kiir<-data.frame(myroi.names,myresagevbv.s)
+  colnames(kiir)<-c('roi','tage','page')
+  write.csv(kiir, '/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/Mixed_N156_BaselineVolumevsAge.csv')
 
   #does not need to do FDR (unfortunatelly)
 #+END_SRC
@@ -735,27 +857,27 @@ BaselineTotalBrain volume as control for confound, very similar results. (as
 expected since age correlates with TotBrainVolume pretty much)
 **** Calculating mixed effect \Delta MADRS ~ EF * \Delta Volume + Age + ECTnumber + Site
 #+BEGIN_SRC R :session ECTanal
-  myres3v3.si<-matrix(NA,length(myroi.names),6)
-  for (i in 1:dim(varnames)[1])
-  {
-    ef<-fd[ind.fd,grep(varnames[i,1],colnames(fd))]
-    dvol<-fd[ind.fd,grep(varnames[i,2],colnames(fd))]
-    #lm.1<-lm(madrs_hdrs_percentage_cahnge~ef*dvol+Age.1+rul_number.1+Site.1,data=fd[ind.fd,])
-    lm.1<-lme(madrs_hdrs_percentage_cahnge~ef*dvol+Age.1+rul_number.1,data=fd[ind.fd,], random=~1|Site.1, na.action=na.omit)
-    #lm.1<-lm(madrs_hdrs_percentage_cahnge~ef,data=fd[ind.fd,])
-    res<-summary(lm.1)
-    myres3v3.si[i,1]<-res$tTable[2,4]
-    myres3v3.si[i,2]<-res$tTable[2,5]
-    myres3v3.si[i,3]<-res$tTable[3,4]
-    myres3v3.si[i,4]<-res$tTable[3,5]
-    myres3v3.si[i,5]<-res$tTable[6,4]
-    myres3v3.si[i,6]<-res$tTable[6,5]
-  }
-  kiir<-data.frame(myroi.names,myres3v3.si)
-  colnames(kiir)<-c('roi','tef','pef','tdVol','pdVol','tINT','pINT')
-  write.csv(kiir, '/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/Mixed_N156_dMADRS-EFmuldVOL+Age+ECTnum+Site.csv')
+    myres3v3.si<-matrix(NA,length(myroi.names),6)
+    for (i in 1:dim(varnames)[1])
+    {
+      ef<-fd[ind.fd,grep(varnames[i,1],colnames(fd))]
+      dvol<-fd[ind.fd,grep(varnames[i,2],colnames(fd))]
+      #lm.1<-lm(madrs_hdrs_percentage_cahnge~ef*dvol+Age.1+rul_number.1+Site.1,data=fd[ind.fd,])
+      lm.1<-lme(madrs_hdrs_percentage_cahnge~ef*dvol+Age.1+rul_number.1,data=fd[ind.fd,], random=~1|Site.1, na.action=na.omit)
+      #lm.1<-lm(madrs_hdrs_percentage_cahnge~ef,data=fd[ind.fd,])
+      res<-summary(lm.1)
+      myres3v3.si[i,1]<-res$tTable[2,4]
+      myres3v3.si[i,2]<-res$tTable[2,5]
+      myres3v3.si[i,3]<-res$tTable[3,4]
+      myres3v3.si[i,4]<-res$tTable[3,5]
+      myres3v3.si[i,5]<-res$tTable[6,4]
+      myres3v3.si[i,6]<-res$tTable[6,5]
+    }
+    kiir<-data.frame(myroi.names,myres3v3.si)
+    colnames(kiir)<-c('roi','tef','pef','tdVol','pdVol','tINT','pINT')
+    write.csv(kiir, '/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/Mixed_N156_dMADRS-EFmuldVOL+Age+ECTnum+Site.csv')
 
-  #does not need to do FDR (unfortunatelly)
+    #does not need to do FDR (unfortunatelly)
 #+END_SRC
 
 #+RESULTS:
@@ -831,7 +953,7 @@ write.csv(kiir, '/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_c
      geom_point(size=5)+
      geom_line(aes(group=roi), color='gray30')+
      scale_x_discrete(name='Hemispheres',labels=c('L','R'))+
-     ylab('Volume change (d - effect size)')+
+     ylab('Volume change (d)')+
      theme(axis.text = element_text(size=22),axis.title = element_text(size = 28, face = "bold"))
   # +
   #   geom_text(aes(label=roi))
@@ -869,13 +991,13 @@ write.csv(kiir, '/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_c
       res<-t.test(dvol.r,dvol.l,paired = TRUE)
       res.l<-t.test(dvol.l)
       res.r<-t.test(dvol.r)
-  
+
       myres6v3[m,1]<-res$statistic
       myres6v3[m,2]<-res$p.value
       myres6v3[m,3]<-res$estimate
       myres6v3[m,4]<-res$estimate/sd(dvol.r-dvol.l,na.rm=TRUE)
 
-  
+
     }
     kiir<-data.frame(myroi.names[ind.to.go.through],myres6v3,p.adjust(myres6v3[,2],method = 'fdr'))
     colnames(kiir)<-c('roi','t','p','mean','d','BH_FDR')
@@ -886,8 +1008,8 @@ write.csv(kiir, '/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_c
     fig.wo.label<-ggplot(efvol,aes(x=def,y=dvol))+
       stat_smooth(method='lm')+
       geom_point(size=5)+
-      xlab('EF laterality index (d - effect size)')+
-      ylab(Delta~'Volume laterality index (d - effect size)')+
+      xlab('EF laterality index (d)')+
+      ylab(Delta~'Volume laterality index (d)')+
       theme(axis.text = element_text(size=22),axis.title = element_text(size=22, face = "bold"))
     ,#+
      # geom_text(aes(label=roi))
@@ -904,39 +1026,40 @@ write.csv(kiir, '/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_c
 #+END_SRC
 
 #+RESULTS:
+: /nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation
 **** Calculating and writing out nii.gz images for showing 42 pairs of ROI representation of data
 #+BEGIN_SRC R :session ECTanal
-library(oro.nifti)
-library(neurobase)
-atlas<-readnii('/nethome/amiklos/ATLASES/OASIS-TRT-20_jointfusion_DKT31_CMA_labels_in_MNI152_v2.nii.gz')
-atlas.2d<-matrix(atlas,1,byrow=T)
+  library(oro.nifti)
+  library(neurobase)
+  atlas<-readnii('/nethome/amiklos/ATLASES/OASIS-TRT-20_jointfusion_DKT31_CMA_labels_in_MNI152_v2.nii.gz')
+  atlas.2d<-matrix(atlas,1,byrow=T)
 
-lut<-read.table('/usr/local/opt/freesurfer5.3/FreeSurferColorLUT.txt')
+  lut<-read.table('/usr/local/opt/freesurfer5.3/FreeSurferColorLUT.txt')
 
-colnames(lut)<-c('ind','roi')
-lat.im.2d<-matrix(0, 2,dim(atlas.2d)[2])
-for (i in 1:dim(efvol)[1])#Left-Cerebellum-Exterior (instead of cortex)
-{
-  name<-str_replace(str_replace_all(efvol$roi[i], '\\.','-'),'EF_','')
-  if (name=='Left-Cerebellum-Cortex' | name=='Right-Cerebellum-Cortex')
+  colnames(lut)<-c('ind','roi')
+  lat.im.2d<-matrix(0, 2,dim(atlas.2d)[2])
+  for (i in 1:dim(efvol)[1])#Left-Cerebellum-Exterior (instead of cortex)
   {
-    name<-str_replace(name,'Cortex','Exterior')
-  }
-  ind<-which(lut$roi==name)  
-  num<-lut$ind[ind]
-  indover<-which(atlas.2d[1,]==num)
-  lat.im.2d[1,indover]<-efvol$def[i]
-  lat.im.2d[2,indover]<-efvol$dvol[i]
+    name<-str_replace(str_replace_all(efvol$roi[i], '\\.','-'),'EF_','')
+    if (name=='Left-Cerebellum-Cortex' | name=='Right-Cerebellum-Cortex')
+    {
+      name<-str_replace(name,'Cortex','Exterior')
+    }
+    ind<-which(lut$roi==name)  
+    num<-lut$ind[ind]
+    indover<-which(atlas.2d[1,]==num)
+    lat.im.2d[1,indover]<-efvol$def[i]
+    lat.im.2d[2,indover]<-efvol$dvol[i]
   
-}
+  }
 
-lat.dEF=atlas
-lat.dEF[]<-array(lat.im.2d[1,],dim(atlas))
-writenii(nim = lat.dEF, '/nethome/amiklos/work/ECT/Bergen/N156_LATER_INDEX_dEF_regions.nii')
+  lat.dEF=atlas
+  lat.dEF[]<-array(lat.im.2d[1,],dim(atlas))
+  writenii(nim = lat.dEF, '/nethome/amiklos/work/ECT/Bergen/N156_LATER_INDEX_dEF_regions.nii')
 
-lat.dVOL=atlas
-lat.dVOL[]<-array(lat.im.2d[2,],dim(atlas))
-writenii(nim = lat.dVOL, '/nethome/amiklos/work/ECT/Bergen/N156_LATER_INDEX_dVOL_regions.nii')
+  lat.dVOL=atlas
+  lat.dVOL[]<-array(lat.im.2d[2,],dim(atlas))
+  writenii(nim = lat.dVOL, '/nethome/amiklos/work/ECT/Bergen/N156_LATER_INDEX_dVOL_regions.nii')
 
 
 #+END_SRC
@@ -972,7 +1095,7 @@ writenii(nim = lat.dVOL, '/nethome/amiklos/work/ECT/Bergen/N156_LATER_INDEX_dVOL
     scale_color_manual(labels=c('R','L'),values=c('blue','orange'))+
     labs(colour='SIDE')+
     xlab('Mean average EF')+
-    ylab('Volume change (d - effect size)')+
+    ylab('Volume change (d)')+
     theme(axis.text = element_text(size=22), axis.title = element_text(size = 28, face = "bold"))  
   #facet_grid(.~side)
   ,#+
@@ -989,69 +1112,70 @@ writenii(nim = lat.dVOL, '/nethome/amiklos/work/ECT/Bergen/N156_LATER_INDEX_dVOL
 #+RESULTS:
 **** Calculating and writing out nii images across 85 ROIs
 #+BEGIN_SRC R :session ECTanal
-library(oro.nifti)
-library(neurobase)
-atlas<-readnii('/nethome/amiklos/ATLASES/OASIS-TRT-20_jointfusion_DKT31_CMA_labels_in_MNI152_v2.nii.gz')
-atlas.2d<-matrix(atlas,1,byrow=T)
+  library(oro.nifti)
+  library(neurobase)
+  atlas<-readnii('/nethome/amiklos/ATLASES/OASIS-TRT-20_jointfusion_DKT31_CMA_labels_in_MNI152_v2.nii.gz')
+  atlas.2d<-matrix(atlas,1,byrow=T)
 
-lut<-read.table('/usr/local/opt/freesurfer5.3/FreeSurferColorLUT.txt')
+  lut<-read.table('/usr/local/opt/freesurfer5.3/FreeSurferColorLUT.txt')
 
-colnames(lut)<-c('ind','roi')
-res.im.2d<-matrix(0, 3,dim(atlas.2d)[2])
-m<-0
-for (i in myroi.names)#Left-Cerebellum-Exterior (instead of cortex)
-{
-  m<-m+1
-  name<-str_replace(str_replace_all(i, '\\.','-'),'EF_','')
-  if (name=='Left-Cerebellum-Cortex' | name=='Right-Cerebellum-Cortex')
+  colnames(lut)<-c('ind','roi')
+  res.im.2d<-matrix(0, 3,dim(atlas.2d)[2])
+  m<-0
+  for (i in myroi.names)#Left-Cerebellum-Exterior (instead of cortex)
   {
-    name<-str_replace(name,'Cortex','Exterior')
+    m<-m+1
+    name<-str_replace(str_replace_all(i, '\\.','-'),'EF_','')
+    if (name=='Left-Cerebellum-Cortex' | name=='Right-Cerebellum-Cortex')
+    {
+      name<-str_replace(name,'Cortex','Exterior')
+    }
+    ind<-which(lut$roi==name)  
+    num<-lut$ind[ind]
+    indover<-which(atlas.2d[1,]==num)
+    res.im.2d[1,indover]<-kiir$mean_ef[m]
+    res.im.2d[2,indover]<-kiir$mean_dvol[m]/kiir$sd_dvol[m]
+    res.im.2d[3,indover]<-kiir$mean_dvol[m]
+
   }
-  ind<-which(lut$roi==name)  
-  num<-lut$ind[ind]
-  indover<-which(atlas.2d[1,]==num)
-  res.im.2d[1,indover]<-kiir$mean_ef[m]
-  res.im.2d[2,indover]<-kiir$mean_dvol[m]/kiir$sd_dvol[m]
-  res.im.2d[3,indover]<-kiir$mean_dvol[m]
-  
-}
 
-meanEF=atlas
-meanEF[]<-array(res.im.2d[1,],dim(atlas))
-writenii(nim = meanEF, '/nethome/amiklos/work/ECT/Bergen/N156_meanEF_regions.nii')
+  meanEF=atlas
+  meanEF[]<-array(res.im.2d[1,],dim(atlas))
+  writenii(nim = meanEF, '/nethome/amiklos/work/ECT/Bergen/N156_meanEF_regions.nii')
 
-dVOL=atlas
-dVOL[]<-array(res.im.2d[2,],dim(atlas))
-writenii(nim = dVOL, '/nethome/amiklos/work/ECT/Bergen/N156_effectsize_volumechange_regions.nii')
+  dVOL=atlas
+  dVOL[]<-array(res.im.2d[2,],dim(atlas))
+  writenii(nim = dVOL, '/nethome/amiklos/work/ECT/Bergen/N156_effectsize_volumechange_regions.nii')
 
-meanVOL=atlas
-meanVOL[]<-array(res.im.2d[3,],dim(atlas))
-writenii(nim = meanEF, '/nethome/amiklos/work/ECT/Bergen/N156_meanVOLch_regions.nii')
+  meanVOL=atlas
+  meanVOL[]<-array(res.im.2d[3,],dim(atlas))
+  writenii(nim = meanEF, '/nethome/amiklos/work/ECT/Bergen/N156_meanVOLch_regions.nii')
 
 
 #+END_SRC
+
 *** Create Figures
 **** Figures with ROIs
 ***** Volume and EF comparision figure, plus adding correlations and boxplot BIG
  #+BEGIN_SRC sh
- cd /nethome/amiklos/work/ECT/Bergen
- overlay 1 0 /usr/local/fsl/data/standard/MNI152_T1_1mm_brain.nii.gz -A N156_effectsize_volumechange_regions.nii.gz 0.01 1.7678  test.nii.gz
- #slicer N156_effectsize_volumechange_regions.nii.gz -l /usr/share/fsl/5.0/etc/luts/rendersea.lut -i -1.7678 1.7678   -x 0.3 sla.png -x 0.35 slb.png -x 0.5 kozep.png -x 0.60 slc.png -x 0.65 sld.png -y 0.35 sle.png -y 0.45 slf.png -y 0.55 slg.png -y 0.65 slh.png -z 0.32 sli.png -z 0.4 slj.png -z 0.55 slk.png -z 0.65 sll.png 
- slicer test.nii.gz -l /usr/share/fsl/5.0/etc/luts/renderhot.lut  -x 0.3 sla.png -x 0.35 slb.png -x 0.5 kozep.png -x 0.60 slc.png -x 0.65 sld.png -y 0.35 sle.png -y 0.45 slf.png -y 0.55 slg.png -y 0.65 slh.png -z 0.32 sli.png -z 0.4 slj.png -z 0.55 slk.png -z 0.65 sll.png 
- pngappend sla.png + slb.png + kozep.png + slc.png + sld.png + sle.png + slf.png + slg.png + slh.png + sli.png + slj.png + slk.png + sll.png + hot_scale.png N156_effectsize_volume2standard.png
+   cd /nethome/amiklos/work/ECT/Bergen
+   overlay 1 0 /usr/local/fsl/data/standard/MNI152_T1_1mm_brain.nii.gz -A N156_effectsize_volumechange_regions.nii.gz 0.01 1.7678  test.nii.gz
+   #slicer N156_effectsize_volumechange_regions.nii.gz -l /usr/share/fsl/5.0/etc/luts/rendersea.lut -i -1.7678 1.7678   -x 0.3 sla.png -x 0.35 slb.png -x 0.5 kozep.png -x 0.60 slc.png -x 0.65 sld.png -y 0.35 sle.png -y 0.45 slf.png -y 0.55 slg.png -y 0.65 slh.png -z 0.32 sli.png -z 0.4 slj.png -z 0.55 slk.png -z 0.65 sll.png 
+   slicer test.nii.gz -l /usr/share/fsl/5.0/etc/luts/renderhot.lut  -x 0.3 sla.png -x 0.35 slb.png -x 0.5 kozep.png -x 0.60 slc.png -x 0.65 sld.png -y 0.35 sle.png -y 0.45 slf.png -y 0.55 slg.png -y 0.65 slh.png -z 0.32 sli.png -z 0.4 slj.png -z 0.55 slk.png -z 0.65 sll.png 
+   pngappend sla.png + slb.png + kozep.png + slc.png + sld.png + sle.png + slf.png + slg.png + slh.png + sli.png + slj.png + slk.png + sll.png + hot_scale.png N156_effectsize_volume2standard.png
 
- overlay 1 0 /usr/local/fsl/data/standard/MNI152_T1_1mm_brain.nii.gz -A  N156_meanEF_regions.nii.gz 1 189.62  EFoverlay.nii.gz
- #slicer N156_meanEF_regions.nii.gz -l /usr/share/fsl/5.0/etc/luts/rendersea.lut -i -189.62 189.62   -x 0.3 sla.png -x 0.35 slb.png -x 0.5 kozep.png -x 0.60 slc.png -x 0.65 sld.png -y 0.35 sle.png -y 0.45 slf.png -y 0.55 slg.png -y 0.65 slh.png -z 0.32 sli.png -z 0.4 slj.png -z 0.55 slk.png -z 0.65 sll.png 
- slicer EFoverlay.nii.gz -l /usr/share/fsl/5.0/etc/luts/renderhot.lut   -x 0.3 sla.png -x 0.35 slb.png -x 0.5 kozep.png -x 0.60 slc.png -x 0.65 sld.png -y 0.35 sle.png -y 0.45 slf.png -y 0.55 slg.png -y 0.65 slh.png -z 0.32 sli.png -z 0.4 slj.png -z 0.55 slk.png -z 0.65 sll.png 
- pngappend sla.png + slb.png + kozep.png + slc.png + sld.png + sle.png + slf.png + slg.png + slh.png + sli.png + slj.png + slk.png + sll.png + hot_scale.png N156_meanEF_volume2standard.png
- pngappend N156_meanEF_volume2standard.png - N156_effectsize_volume2standard.png N156_meanEF_vs_dVolume.png
- convert N156_meanEF_vs_dVolume.png -fill white -opaque black WHITE-N156_meanEF_vs_dVolume.png  
- convert -font helvetica -fill black -pointsize 16 -gravity center -draw "text -1200,10 'x = 35 ' text -990,10 'x = 26 ' text -770,10 'x = -1 ' text -550,10 'x = -19' text -330,10 'x = -28' text -125,10 'y = -50' text 60,10 'y = -28' text 245,10 'y = -6' text 420,10 'y = 16' text 605,10 'z = -14' text 785,10 'z = 1' text 970,10 'z = 28' text 1150,10 'z = 46' text 1246,-30 '0' text 1246,-170 '190' text 1246,185 '0.0' text 1246,40 '1.8'" WHITE-N156_meanEF_vs_dVolume.png  TXT-WHITE-N156_meanEF_vs_dVolume.png    
- 
- # montage -geometry 1103x1203+100+0 /nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/Regions_VolChange_Effect_Size.pdf /nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/Regions_ALL_meanEFvsdvol.pdf /nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/Regions_Vol.png
- montage -geometry 1103x1203+100+0 /nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/Regions_VolChange_Effect_Size.png /nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/Regions_ALL_meanEFvsdvol.png /nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/Regions_Vol.png
- # pngappend /nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/Regions_VolChange_Effect_Size.png + /nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/Regions_ALL_meanEFvsdvol.png /nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/Regions_Vol.png
- pngappend TXT-WHITE-N156_meanEF_vs_dVolume.png - /nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/Regions_Vol.png Figure_ROI_based_volume_change.png
+   overlay 1 0 /usr/local/fsl/data/standard/MNI152_T1_1mm_brain.nii.gz -A  N156_meanEF_regions.nii.gz 1 189.62  EFoverlay.nii.gz
+   #slicer N156_meanEF_regions.nii.gz -l /usr/share/fsl/5.0/etc/luts/rendersea.lut -i -189.62 189.62   -x 0.3 sla.png -x 0.35 slb.png -x 0.5 kozep.png -x 0.60 slc.png -x 0.65 sld.png -y 0.35 sle.png -y 0.45 slf.png -y 0.55 slg.png -y 0.65 slh.png -z 0.32 sli.png -z 0.4 slj.png -z 0.55 slk.png -z 0.65 sll.png 
+   slicer EFoverlay.nii.gz -l /usr/share/fsl/5.0/etc/luts/renderhot.lut   -x 0.3 sla.png -x 0.35 slb.png -x 0.5 kozep.png -x 0.60 slc.png -x 0.65 sld.png -y 0.35 sle.png -y 0.45 slf.png -y 0.55 slg.png -y 0.65 slh.png -z 0.32 sli.png -z 0.4 slj.png -z 0.55 slk.png -z 0.65 sll.png 
+   pngappend sla.png + slb.png + kozep.png + slc.png + sld.png + sle.png + slf.png + slg.png + slh.png + sli.png + slj.png + slk.png + sll.png + hot_scale.png N156_meanEF_volume2standard.png
+   pngappend N156_meanEF_volume2standard.png - N156_effectsize_volume2standard.png N156_meanEF_vs_dVolume.png
+   convert N156_meanEF_vs_dVolume.png -fill white -opaque black WHITE-N156_meanEF_vs_dVolume.png  
+   convert -font helvetica -fill black -pointsize 16 -gravity center -draw "text -1200,10 'x = 35 ' text -990,10 'x = 26 ' text -770,10 'x = -1 ' text -550,10 'x = -19' text -330,10 'x = -28' text -125,10 'y = -50' text 60,10 'y = -28' text 245,10 'y = -6' text 420,10 'y = 16' text 605,10 'z = -14' text 785,10 'z = 1' text 970,10 'z = 28' text 1150,10 'z = 46' text 1246,-30 '0' text 1246,-170 '190' text 1246,185 '0.0' text 1246,40 '1.8'" WHITE-N156_meanEF_vs_dVolume.png  TXT-WHITE-N156_meanEF_vs_dVolume.png    
+
+   # montage -geometry 1103x1203+100+0 /nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/Regions_VolChange_Effect_Size.pdf /nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/Regions_ALL_meanEFvsdvol.pdf /nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/Regions_Vol.png
+   montage -geometry 1103x1203+100+0 /nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/Regions_VolChange_Effect_Size.png /nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/Regions_ALL_meanEFvsdvol.png /nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/Regions_Vol.png
+   # pngappend /nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/Regions_VolChange_Effect_Size.png + /nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/Regions_ALL_meanEFvsdvol.png /nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/Regions_Vol.png
+   pngappend TXT-WHITE-N156_meanEF_vs_dVolume.png - /nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/Regions_Vol.png Figure_ROI_based_volume_change.png
   #+END_SRC
 
   #+RESULTS:
@@ -1131,7 +1255,7 @@ writenii(nim = meanEF, '/nethome/amiklos/work/ECT/Bergen/N156_meanVOLch_regions.
 
     plotdata<-data.frame(fd$EF_Left.Hippocampus,fd$EF_Right.Hippocampus,fd$volumechange_im_Left.Hippocampus, fd$volumechange_im_Right.Hippocampus,fd$SubjID)
     plotdata.long<-reshape(plotdata,direction = "long", idvar = "fd.SubjID", varying=list(c(1,2),c(3,4)))
-    plotA<-ggplot(plotdata.long,aes(x=fd.EF_Left.Hippocampus,y=fd.volumechange_im_Left.Hippocampus, colour=factor(time)))+
+    plotA<-ggplot(plotdata.long,aes(x=fd.EF_Left.Hippocampus,y=fd.volumechange_im_Left.Hippocampus*100, colour=factor(time)))+
       stat_smooth(method='lm')+
       geom_point()+
       labs(colour='Side')+
@@ -1141,7 +1265,7 @@ writenii(nim = meanEF, '/nethome/amiklos/work/ECT/Bergen/N156_meanVOLch_regions.
 
     plotA
 
-    plotB<-ggplot(plotdata.long,aes(x=factor(time),y=fd.volumechange_im_Left.Hippocampus))+
+    plotB<-ggplot(plotdata.long,aes(x=factor(time),y=fd.volumechange_im_Left.Hippocampus*100))+
       geom_boxplot(fill=c('orange','blue'))+
       geom_point()+
       geom_line(aes(group = fd.SubjID), colour='gray')+
@@ -1169,7 +1293,7 @@ writenii(nim = meanEF, '/nethome/amiklos/work/ECT/Bergen/N156_meanVOLch_regions.
  #+BEGIN_SRC R :session ECTanal
       plotdata<-data.frame(fd$EF_Left.Amygdala,fd$EF_Right.Amygdala,fd$volumechange_Left.Amygdala, fd$volumechange_Right.Amygdala,fd$SubjID)
       plotdata.long<-reshape(plotdata,direction = "long", idvar = "fd.SubjID", varying=list(c(1,2),c(3,4)))
-      plotA<-ggplot(plotdata.long,aes(x=fd.EF_Left.Amygdala,y=fd.volumechange_Left.Amygdala, colour=factor(time)))+
+      plotA<-ggplot(plotdata.long,aes(x=fd.EF_Left.Amygdala,y=fd.volumechange_Left.Amygdala*100, colour=factor(time)))+
         stat_smooth(method='lm')+
         geom_point()+
         labs(colour='Side')+
@@ -1179,7 +1303,7 @@ writenii(nim = meanEF, '/nethome/amiklos/work/ECT/Bergen/N156_meanVOLch_regions.
 
       plotA
 
-      plotB<-ggplot(plotdata.long,aes(x=factor(time),y=fd.volumechange_Left.Amygdala))+
+      plotB<-ggplot(plotdata.long,aes(x=factor(time),y=fd.volumechange_Left.Amygdala*100))+
         geom_boxplot(fill=c('orange','blue'))+
         geom_point()+
         geom_line(aes(group = fd.SubjID), colour='gray')+
@@ -1274,6 +1398,7 @@ writenii(nim = meanEF, '/nethome/amiklos/work/ECT/Bergen/N156_meanVOLch_regions.
 
  #+RESULTS:
  : 1
+
 * Demographic Data and Statistics :noexport:
 ** Sample Size
 #+BEGIN_SRC R :session ECTanal :exports none :results values drawer
@@ -1522,7 +1647,46 @@ p = {{{p_1}}}; df = {{{df_1}}}; t = {{{t_1}}}.
 [[./Figures/EF-Volume-Specificity.png]]
 
 * Supplementary Tables
-** Supplementary Table 1
+** Supplementary Table 1A
+#+BEGIN_SRC R :results output raw :exports results
+
+  library(ascii)
+  library(stringr)
+  mt<-read.csv('/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/N156_Site_Summary.csv')[,c(2:7)]
+  colnames(mt)[c(3,4,5,6)]<-c('age (mean)','age (sd)', 'baseline MADRS', '\\\\Delta MADRS (%)')
+  #mt$roi<-str_replace(mt$roi,'EF','\\\\Delta VOL')
+  mt.asc<-ascii(mt[,c(2:6)], colnames=colnames(mt[,c(2:6)]),digits=2, caption="Site Summary")
+#  mt.asc<-ascii(mt, colnames=colnames(mt),digits=2, caption="Site Summary")
+  print(mt.asc,type="org")
+
+#+END_SRC
+
+#+RESULTS:
+#+CAPTION: Site Summary
+| Site |  N | age (mean) | age (sd) | baseline MADRS | \\Delta MADRS (%) |
+|------+----+------------+----------+----------------+-------------------|
+|    1 | 30 |      39.87 |    12.68 |          40.73 |             45.12 |
+|    2 | 33 |      64.48 |     8.93 |          31.36 |             69.48 |
+|    3 | 16 |      73.62 |    12.45 |          29.56 |             77.24 |
+|    4 | 23 |      46.87 |     9.19 |          29.96 |             43.18 |
+|    5 |  2 |      62.50 |     0.71 |          36.75 |             32.03 |
+|    6 | 18 |      48.50 |    16.77 |          33.83 |             57.12 |
+|    7 | 29 |      72.66 |     7.57 |          35.07 |             79.13 |
+
+** Supplementary Table 1B
+
+
+#+CAPTION: MRI Summary
+| Site | TESLA | TR (ms) |   TE (ms) | Flip Angle | Voxel-size (mm) |
+|------+-------+---------+-----------+------------+-----------------|
+|    1 |     3 |    2530 | 1.74-7.32 |          7 |     1.3x1.0x1.0 |
+|    2 |     3 |    2530 | 1.64-9.08 |          7 |     1.0x1.0x1.0 |
+|    3 |     3 |    7.84 |      3.02 |         12 |   0.94x0.94x1.0 |
+|    4 |     3 |     7.4 |       3.4 |          9 |     0.5x0.5x0.5 |
+|    5 |     3 |    7.83 |      3.02 |          8 |   0.94x0.94x1.0 |
+|    6 |     3 |     6.7 |       2.9 |          8 |     1.0x1.0x1.0 |
+|    7 |     3 |    9600 |       4.6 |          8 |   0.98x0.98x1.2 |
+** Supplementary Table 2
 #+BEGIN_SRC R :results output raw :exports results
 
 library(ascii)
@@ -1624,7 +1788,7 @@ print(mt.asc,type="org")
 | 84 | 84.0000 | \Delta VOL_ctx.rh.temporalpole             | 15.0638 | 0.0000 | 0.0442 | 1.2259 | 0.0000 |
 | 85 | 85.0000 | \Delta VOL_ctx.rh.transversetemporal       | 9.8355  | 0.0000 | 0.0159 | 0.8004 | 0.0000 |
 
-** Supplementary Table 2
+** Supplementary Table 3
 #+BEGIN_SRC R :results output raw :exports results
 
   library(ascii)
@@ -1685,7 +1849,7 @@ print(mt.asc,type="org")
 |    |                                                  |         |        |         |         |        |
 
 
-** Supplementary Table 3-without site                              :noexport:
+** Supplementary Table 4-without site                              :noexport:
 #+BEGIN_SRC R  :results output raw :exports results
 
   library(ascii)
@@ -1789,7 +1953,7 @@ print(mt.asc,type="org")
 | 84 | \Delta VOL_ctx.rh.temporalpole             | 0.5802  | 0.5626 | 1.9373  | 3.9473   | 0.7272    |
 | 85 | \Delta VOL_ctx.rh.transversetemporal       | 1.3252  | 0.1872 | 3.6402  | 3.1050   | 0.4315    |
 
-** Supplementary Table 4-without site                              :noexport:
+** Supplementary Table 5-without site                              :noexport:
 #+BEGIN_SRC R :results output raw :exports results
   library(ascii)
   library(stringr)
@@ -1895,7 +2059,7 @@ print(mt.asc,type="org")
 | 84 | \Delta MADRS ~ \Delta VOL_ctx.rh.temporalpole             | -0.1912 | 0.8486 | 5.5429 | -2.7693  |
 | 85 | \Delta MADRS ~ \Delta VOL_ctx.rh.transversetemporal       | 1.1493  | 0.2523 | 5.0365 | -3.1736  |
 
-** Supplementary Table 5-without site                              :noexport:
+** Supplementary Table 6-without site                              :noexport:
 #+BEGIN_SRC R :results output raw :exports results
   library(ascii)
   library(stringr)
@@ -2002,7 +2166,7 @@ print(mt.asc,type="org")
 |    |                                                   |         |        |        |          |
 
 
-** Supplementary Table 3-classic                                   :noexport:
+** Supplementary Table 4-classic                                   :noexport:
 #+BEGIN_SRC R  :results output raw :exports results
 
   library(ascii)
@@ -2107,7 +2271,7 @@ print(mt.asc,type="org")
 | 85 | \Delta VOL_ctx.rh.transversetemporal       |  1.0726 | 0.2853 | -0.0468 |   3.4598 |    0.5159 |
 |    |                                            |         |        |         |          |           |
 
-** Supplementary Table 4-classic                                   :noexport:
+** Supplementary Table 5-classic                                   :noexport:
 #+BEGIN_SRC R :results output raw :exports results
   library(ascii)
   library(stringr)
@@ -2212,7 +2376,7 @@ print(mt.asc,type="org")
 | 84 | \Delta MADRS ~ \Delta VOL_ctx.rh.temporalpole             | -0.6126 | 0.5411 | 2.5318 | -2.6560  |
 | 85 | \Delta MADRS ~ \Delta VOL_ctx.rh.transversetemporal       | 1.0526  | 0.2943 | 2.5712 | -3.1486  |
 
-** Supplementary Table 5-classic                                   :noexport:
+** Supplementary Table 6-classic                                   :noexport:
 #+BEGIN_SRC R :results output raw :exports results
   library(ascii)
   library(stringr)
@@ -2318,7 +2482,7 @@ print(mt.asc,type="org")
 | 84 | \Delta MADRS ~ EF_ctx.rh.temporalpole             | -0.1891 | 0.8503 | 2.8393 | -3.1030  |
 | 85 | \Delta MADRS ~ EF_ctx.rh.transversetemporal       | 0.8436  | 0.4003 | 2.8980 | -2.9848  |
 
-** Supplementary Table 3
+** Supplementary Table 4
 #+BEGIN_SRC R  :results output raw :exports results
   #install.packages("/home/amiklos/Downloads/ascii_2.1.tar.gz", repos=NULL, type="source")
   library(ascii)
@@ -2332,7 +2496,7 @@ print(mt.asc,type="org")
 #+END_SRC
 
 #+RESULTS:
-#+CAPTION: The relationship between volume changes and EF across individuals (EF ~ \Delta Vol + Age + ECTnum)
+#+CAPTION: The relationship between volume changes and EF across individuals (\Delta Vol ~ EF + Age + ECTnum)
 |    | roi                                        | t_EF    | p_EF   | t_Age   | t_ECTnum | BH^EF_FDR |
 |----+--------------------------------------------+---------+--------+---------+----------+-----------|
 | 1  | \Delta VOL_Left.Cerebellum.Cortex          | -0.3668 | 0.7143 | -0.1150 | 1.9368   | 0.8205    |
@@ -2422,7 +2586,7 @@ print(mt.asc,type="org")
 | 85 | \Delta VOL_ctx.rh.transversetemporal       | 1.1426  | 0.2551 | 0.6448  | 3.2405   | 0.4614    |
 
 
-** Supplementary Table 4
+** Supplementary Table 5
 #+BEGIN_SRC R :results output raw :exports results
   library(ascii)
   library(stringr)
@@ -2528,7 +2692,7 @@ print(mt.asc,type="org")
 | 85 | \Delta MADRS ~ \Delta VOL_ctx.rh.transversetemporal       | 1.1493  | 0.2524 | 5.0365 | -3.1736  |
 
 
-** Supplementary Table 5
+** Supplementary Table 6
 #+BEGIN_SRC R :results output raw :exports results
   library(ascii)
   library(stringr)
@@ -2634,8 +2798,113 @@ print(mt.asc,type="org")
 | 84 | \Delta MADRS ~ EF_ctx.rh.temporalpole             | -0.4055 | 0.6857 | 5.6013 | -2.9909  |
 | 85 | \Delta MADRS ~ EF_ctx.rh.transversetemporal       | 0.7262  | 0.4689 | 5.5628 | -2.9155  |
 
+** Supplementary Table 7
+#+BEGIN_SRC R :results output raw :exports results
+  library(ascii)
+  library(stringr)
+  mt<-read.csv('/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/Mixed_N156_BaselineVolumevsAge.csv')[,c(2,3,4)]
+  mt$roi<-paste0(str_replace(mt$roi,'EF','Baseline Vol'),' ~ Age')
 
-** Supplementary Table 6 without confound :noexport:
+  colnames(mt)[c(2:3)]<-c('t_Age','p_Age')
+  mt.asc<-ascii(mt, colnames=colnames(mt),digits=4,  caption="The relationship between baseline volume and age (Baseline Volume ~ Age)")
+
+  print(mt.asc,type="org")
+
+#+END_SRC
+
+#+RESULTS:
+#+CAPTION: The relationship between baseline volume and age (Baseline Volume ~ Age)
+|    | roi                                                | t_Age   | p_Age  |
+|----+----------------------------------------------------+---------+--------|
+| 1  | Baseline Vol_Left.Cerebellum.Cortex ~ Age          | -4.2768 | 0.0000 |
+| 2  | Baseline Vol_Left.Thalamus.Proper ~ Age            | -2.6668 | 0.0085 |
+| 3  | Baseline Vol_Left.Caudate ~ Age                    | 1.1587  | 0.2485 |
+| 4  | Baseline Vol_Left.Putamen ~ Age                    | -5.1151 | 0.0000 |
+| 5  | Baseline Vol_Left.Pallidum ~ Age                   | -2.0723 | 0.0400 |
+| 6  | Baseline Vol_Brain.Stem ~ Age                      | -1.7714 | 0.0786 |
+| 7  | Baseline Vol_Left.Hippocampus ~ Age                | -6.5427 | 0.0000 |
+| 8  | Baseline Vol_Left.Amygdala ~ Age                   | -4.6348 | 0.0000 |
+| 9  | Baseline Vol_Left.Accumbens.area ~ Age             | -4.6046 | 0.0000 |
+| 10 | Baseline Vol_Left.VentralDC ~ Age                  | -1.3501 | 0.1791 |
+| 11 | Baseline Vol_Right.Cerebellum.Cortex ~ Age         | -4.1066 | 0.0001 |
+| 12 | Baseline Vol_Right.Thalamus.Proper ~ Age           | -3.6386 | 0.0004 |
+| 13 | Baseline Vol_Right.Caudate ~ Age                   | -1.2939 | 0.1978 |
+| 14 | Baseline Vol_Right.Putamen ~ Age                   | -6.7879 | 0.0000 |
+| 15 | Baseline Vol_Right.Pallidum ~ Age                  | -4.5543 | 0.0000 |
+| 16 | Baseline Vol_Right.Hippocampus ~ Age               | -5.6416 | 0.0000 |
+| 17 | Baseline Vol_Right.Amygdala ~ Age                  | -3.6549 | 0.0004 |
+| 18 | Baseline Vol_Right.Accumbens.area ~ Age            | -5.8783 | 0.0000 |
+| 19 | Baseline Vol_Right.VentralDC ~ Age                 | -2.5733 | 0.0111 |
+| 20 | Baseline Vol_ctx.lh.bankssts ~ Age                 | -2.8936 | 0.0044 |
+| 21 | Baseline Vol_ctx.lh.caudalanteriorcingulate ~ Age  | -0.8132 | 0.4174 |
+| 22 | Baseline Vol_ctx.lh.caudalmiddlefrontal ~ Age      | -3.3319 | 0.0011 |
+| 23 | Baseline Vol_ctx.lh.cuneus ~ Age                   | -2.9607 | 0.0036 |
+| 24 | Baseline Vol_ctx.lh.entorhinal ~ Age               | -3.5206 | 0.0006 |
+| 25 | Baseline Vol_ctx.lh.fusiform ~ Age                 | -5.5547 | 0.0000 |
+| 26 | Baseline Vol_ctx.lh.inferiorparietal ~ Age         | -4.1748 | 0.0001 |
+| 27 | Baseline Vol_ctx.lh.inferiortemporal ~ Age         | -5.6376 | 0.0000 |
+| 28 | Baseline Vol_ctx.lh.isthmuscingulate ~ Age         | -3.3345 | 0.0011 |
+| 29 | Baseline Vol_ctx.lh.lateraloccipital ~ Age         | -3.7491 | 0.0003 |
+| 30 | Baseline Vol_ctx.lh.lateralorbitofrontal ~ Age     | -7.0033 | 0.0000 |
+| 31 | Baseline Vol_ctx.lh.lingual ~ Age                  | -5.9806 | 0.0000 |
+| 32 | Baseline Vol_ctx.lh.medialorbitofrontal ~ Age      | -1.9891 | 0.0486 |
+| 33 | Baseline Vol_ctx.lh.middletemporal ~ Age           | -6.2512 | 0.0000 |
+| 34 | Baseline Vol_ctx.lh.parahippocampal ~ Age          | -7.4016 | 0.0000 |
+| 35 | Baseline Vol_ctx.lh.paracentral ~ Age              | -1.9326 | 0.0553 |
+| 36 | Baseline Vol_ctx.lh.parsopercularis ~ Age          | -5.0408 | 0.0000 |
+| 37 | Baseline Vol_ctx.lh.parsorbitalis ~ Age            | -5.3290 | 0.0000 |
+| 38 | Baseline Vol_ctx.lh.parstriangularis ~ Age         | -5.5008 | 0.0000 |
+| 39 | Baseline Vol_ctx.lh.pericalcarine ~ Age            | -2.0474 | 0.0424 |
+| 40 | Baseline Vol_ctx.lh.postcentral ~ Age              | -5.1513 | 0.0000 |
+| 41 | Baseline Vol_ctx.lh.posteriorcingulate ~ Age       | -3.4563 | 0.0007 |
+| 42 | Baseline Vol_ctx.lh.precentral ~ Age               | -4.3857 | 0.0000 |
+| 43 | Baseline Vol_ctx.lh.precuneus ~ Age                | -4.0321 | 0.0001 |
+| 44 | Baseline Vol_ctx.lh.rostralanteriorcingulate ~ Age | -2.3314 | 0.0211 |
+| 45 | Baseline Vol_ctx.lh.rostralmiddlefrontal ~ Age     | -3.9878 | 0.0001 |
+| 46 | Baseline Vol_ctx.lh.superiorfrontal ~ Age          | -5.4678 | 0.0000 |
+| 47 | Baseline Vol_ctx.lh.superiorparietal ~ Age         | -4.8697 | 0.0000 |
+| 48 | Baseline Vol_ctx.lh.superiortemporal ~ Age         | -6.6056 | 0.0000 |
+| 49 | Baseline Vol_ctx.lh.supramarginal ~ Age            | -5.6008 | 0.0000 |
+| 50 | Baseline Vol_ctx.lh.frontalpole ~ Age              | -3.7056 | 0.0003 |
+| 51 | Baseline Vol_ctx.lh.temporalpole ~ Age             | -3.3124 | 0.0012 |
+| 52 | Baseline Vol_ctx.lh.transversetemporal ~ Age       | -5.2842 | 0.0000 |
+| 53 | Baseline Vol_ctx.rh.bankssts ~ Age                 | -5.8200 | 0.0000 |
+| 54 | Baseline Vol_ctx.rh.caudalanteriorcingulate ~ Age  | -0.1144 | 0.9091 |
+| 55 | Baseline Vol_ctx.rh.caudalmiddlefrontal ~ Age      | -3.7977 | 0.0002 |
+| 56 | Baseline Vol_ctx.rh.cuneus ~ Age                   | -2.8824 | 0.0046 |
+| 57 | Baseline Vol_ctx.rh.entorhinal ~ Age               | -1.8970 | 0.0598 |
+| 58 | Baseline Vol_ctx.rh.fusiform ~ Age                 | -5.2218 | 0.0000 |
+| 59 | Baseline Vol_ctx.rh.inferiorparietal ~ Age         | -5.7134 | 0.0000 |
+| 60 | Baseline Vol_ctx.rh.inferiortemporal ~ Age         | -4.6609 | 0.0000 |
+| 61 | Baseline Vol_ctx.rh.isthmuscingulate ~ Age         | -4.2929 | 0.0000 |
+| 62 | Baseline Vol_ctx.rh.lateraloccipital ~ Age         | -3.7913 | 0.0002 |
+| 63 | Baseline Vol_ctx.rh.lateralorbitofrontal ~ Age     | -4.8756 | 0.0000 |
+| 64 | Baseline Vol_ctx.rh.lingual ~ Age                  | -5.3444 | 0.0000 |
+| 65 | Baseline Vol_ctx.rh.medialorbitofrontal ~ Age      | -3.0897 | 0.0024 |
+| 66 | Baseline Vol_ctx.rh.middletemporal ~ Age           | -6.9557 | 0.0000 |
+| 67 | Baseline Vol_ctx.rh.parahippocampal ~ Age          | -5.6025 | 0.0000 |
+| 68 | Baseline Vol_ctx.rh.paracentral ~ Age              | -2.0546 | 0.0417 |
+| 69 | Baseline Vol_ctx.rh.parsopercularis ~ Age          | -5.4711 | 0.0000 |
+| 70 | Baseline Vol_ctx.rh.parsorbitalis ~ Age            | -5.0994 | 0.0000 |
+| 71 | Baseline Vol_ctx.rh.parstriangularis ~ Age         | -4.4944 | 0.0000 |
+| 72 | Baseline Vol_ctx.rh.pericalcarine ~ Age            | -1.7874 | 0.0760 |
+| 73 | Baseline Vol_ctx.rh.postcentral ~ Age              | -3.7190 | 0.0003 |
+| 74 | Baseline Vol_ctx.rh.posteriorcingulate ~ Age       | -3.6034 | 0.0004 |
+| 75 | Baseline Vol_ctx.rh.precentral ~ Age               | -3.9917 | 0.0001 |
+| 76 | Baseline Vol_ctx.rh.precuneus ~ Age                | -5.6244 | 0.0000 |
+| 77 | Baseline Vol_ctx.rh.rostralanteriorcingulate ~ Age | -1.7497 | 0.0823 |
+| 78 | Baseline Vol_ctx.rh.rostralmiddlefrontal ~ Age     | -4.5143 | 0.0000 |
+| 79 | Baseline Vol_ctx.rh.superiorfrontal ~ Age          | -6.1004 | 0.0000 |
+| 80 | Baseline Vol_ctx.rh.superiorparietal ~ Age         | -3.9167 | 0.0001 |
+| 81 | Baseline Vol_ctx.rh.superiortemporal ~ Age         | -8.2332 | 0.0000 |
+| 82 | Baseline Vol_ctx.rh.supramarginal ~ Age            | -5.8496 | 0.0000 |
+| 83 | Baseline Vol_ctx.rh.frontalpole ~ Age              | -2.3721 | 0.0190 |
+| 84 | Baseline Vol_ctx.rh.temporalpole ~ Age             | -1.6448 | 0.1022 |
+| 85 | Baseline Vol_ctx.rh.transversetemporal ~ Age       | -3.8244 | 0.0002 |
+
+
+
+** Supplementary Table 8 without confound                          :noexport:
 #+BEGIN_SRC R :results output raw :exports results
   library(ascii)
   library(stringr)
@@ -2741,6 +3010,7 @@ individuals (\Delta MADRS ~ EF)
 | 83 | \Delta MADRS ~ EF_ctx.rh.frontalpole              | 1.8559  | 0.0654 | 0.3530    |
 | 84 | \Delta MADRS ~ EF_ctx.rh.temporalpole             | 0.3377  | 0.7361 | 0.8455    |
 | 85 | \Delta MADRS ~ EF_ctx.rh.transversetemporal       | 1.0770  | 0.2832 | 0.5122    |
+
 
 
 
