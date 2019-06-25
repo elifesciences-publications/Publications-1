@@ -762,6 +762,7 @@ expected since age correlates with TotBrainVolume pretty much)
 
 #+RESULTS:
 :1
+
 No change in the results here. (as
 expected since age correlates strongly with baseline BrainVolume, see next)
 
@@ -1422,9 +1423,9 @@ paste0(Nres,'\n',  meanres, '\n', sdres, '\n', femres)
 #+RESULTS:
 :RESULTS:
 #+MACRO: N 151
-#+MACRO: ma 57.3
+#+MACRO: ma 57.5
 #+MACRO: sa 17.1
-#+MACRO: fem 94
+#+MACRO: fem 92
 :END:
 We analyzed N = {{{N}}}({{{fem}}}F); Age: {{{ma}}} +/- {{{sa}}}.
 ** Clinical Outcome
