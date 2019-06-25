@@ -761,9 +761,10 @@ expected since age correlates with TotBrainVolume pretty much)
 #+END_SRC
 
 #+RESULTS:
-Interestingly no results here either. I did the whole analysis with
-BaselineTotalBrain volume as control for confound, very similar results. (as
-expected since age correlates with TotBrainVolume pretty much)
+:1
+No change in the results here. (as
+expected since age correlates strongly with baseline BrainVolume, see next)
+
 **** Calculating mixed effect Baselinevolume ~ Age + Site
 #+BEGIN_SRC R :session ECTanal
   myresagevbv.s<-matrix(NA,length(myroi.names),2)
