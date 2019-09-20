@@ -1334,7 +1334,7 @@ write.csv(kiir, '/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_c
  #+RESULTS:
 
 ***** Calculating the individual specificity of the EF across different EF patterns
- #+BEGIN_SRC R :session ECTanal
+#+BEGIN_SRC R :session ECTanal
 
      myres.p<-matrix(NA,length(myroi.names),length(myroi.names))
      for (j in 1:dim(varnames)[1])
@@ -1375,10 +1375,10 @@ write.csv(kiir, '/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_c
 
    perm.res<-data.frame(myroi.names,myres.p) #dVOL is fixed and EF is changing
      RES<-merge(fdr.res,perm.res,by.x='roi',by.y='myroi.names')
-     long.RES<-reshape(RES,direction = 'long',idvar = 'roi', varying = list(10:dim(RES)[2]),v.names = 'perm.t',timevar = 'permnum')
-     ind<-which(long.RES$'BH^EF_FDR'<0.01)
+     long.RES2<-reshape(RES,direction = 'long',idvar = 'roi', varying = list(10:dim(RES)[2]),v.names = 'perm.t',timevar = 'permnum')
+     ind<-which(long.RES2$'BH^EF_FDR'<0.01)
 
-     fig.spec.2<-ggplot(data=long.RES[ind,],aes(x=roi,y=perm.t))+
+     fig.spec.2<-ggplot(data=long.RES2[ind,],aes(x=roi,y=perm.t))+
        geom_boxplot(outlier.shape = NA)+
        geom_jitter(width = 0.1)+
        geom_point(aes(y=t_EF),col = 'red', size = 5)+
@@ -1387,25 +1387,43 @@ write.csv(kiir, '/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_c
          xlab('')+
              ylab(expression(EF[permutating]~'~'~Delta*Vol~(t[EF])))
    fig.spec.2
+
+
+   long.RES$permtype<-1
+   long.RES2$permtype<-2
+   long.RESmerge<-rbind(long.RES,long.RES2)
+   dim(long.RESmerge)
+
+   ind<-which(long.RESmerge$roi=='EF_Left.Hippocampus')
+
+   fig.Hipo<-ggplot(data=long.RESmerge[ind,],aes(x=factor(permtype),y=perm.t))+
+       geom_boxplot(outlier.shape = NA)+
+       geom_jitter(width = 0.1)+
+       geom_point(aes(y=t_EF),col = 'red', size = 5)+
+         theme(axis.text.x=element_text(angle=45,hjust=1))+
+         scale_x_discrete(labels=c(expression(Delta*Vol[permutating]~'~'~EF),expression(Delta*Vol~'~'~EF[permutating])))+
+         xlab('')+
+       ylab(expression(Effect~sizes~(t[EF])))
+   #    ggtitle('Permutations to test specificity of results in Hippocampus')
+
+   pdf('/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/Manuscript/V6_TO_GEMRIC_RESP_TO_ELIFE/Figures/Figure-3-figure-supplement.pdf', width=6,height=7)
+   fig.Hipo
+   dev.off()
+
+   ind<-which(long.RESmerge$roi=='EF_Left.Amygdala')
+   fig.Amy<-ggplot(data=long.RESmerge[ind,],aes(x=factor(permtype),y=perm.t))+
+       geom_boxplot(outlier.shape = NA)+
+       geom_jitter(width = 0.1)+
+       geom_point(aes(y=t_EF),col = 'red', size = 5)+
+         theme(axis.text.x=element_text(angle=45,hjust=1))+
+         scale_x_discrete(labels=c(expression(Delta*Vol[permutating]~'~'~EF),expression(Delta*Vol~'~'~EF[permutating])))+
+         xlab('')+
+       ylab(expression(Effect~sizes~(t[EF])))
+   #    ggtitle('Permutations to test specificity of results in Amygdala')
+   pdf('/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/Manuscript/V6_TO_GEMRIC_RESP_TO_ELIFE/Figures/Figure-4-figure-supplement.pdf', width=6,height=7)
+   fig.Amy
+   dev.off()
 #+END_SRC
-
-#+RESULTS:
-
-#+BEGIN_SRC R :session ECTanal 
-
-
-  require(gridExtra)  
-    #pdf('/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/EF-Volume-Specificity.pdf', width=8,height=12)
-    png('/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/EF-Volume-Specificity.png', width=480,height=720)
-    grid.arrange(fig.spec,fig.spec.2,nrow=2,heights=c(4,5))
-    dev.off()
-
-
- #+END_SRC
-
- #+RESULTS:
- : 1
-
 * Demographic Data and Statistics :noexport:
 ** Sample Size
 #+BEGIN_SRC R :session ECTanal :exports none :results values drawer
