@@ -524,6 +524,39 @@ We did not expect too much here given Oltedal et al. 2018.
 #+RESULTS:
 We did not expect too much here given Oltedal et al. 2018.
 
+**** Calculating mixed effect \Abs MADRS ~ \Delta Volume + Age + ECTnum + Bas MADRS + Site
+#+BEGIN_SRC R :session ECTanal
+  library(nlme)
+  myres2v3.a<-matrix(NA,length(myroi.names),8)
+  for (i in 1:dim(varnames)[1])
+  {
+    ef<-fd[ind.fd,grep(varnames[i,1],colnames(fd))]
+    dvol<-fd[ind.fd,grep(varnames[i,2],colnames(fd))]
+    #lm.1<-lm(madrs_hdrs_percentage_cahnge~dvol+Age.1+rul_number.1+Site.1,data=fd[ind.fd,])
+    lm.1<-lme((madrs_hdrs_conversion.1-madrs_hdrs_conversion.3)~dvol+Age.1+rul_number.1+madrs_hdrs_conversion.1,data=fd[ind.fd,],random=~1|Site.1, na.action=na.omit)
+
+    #lm.1<-lm(madrs_hdrs_percentage_cahnge~ef,data=fd[ind.fd,])
+    res<-summary(lm.1)
+    myres2v3.a[i,1]<-res$tTable[2,4]
+    myres2v3.a[i,2]<-res$tTable[2,5]
+    myres2v3.a[i,3]<-res$tTable[3,4]
+    myres2v3.a[i,4]<-res$tTable[3,5]
+    myres2v3.a[i,5]<-res$tTable[4,4]
+    myres2v3.a[i,6]<-res$tTable[4,5]
+    myres2v3.a[i,7]<-res$tTable[5,4]
+    myres2v3.a[i,8]<-res$tTable[5,5]
+
+
+  }
+  kiir<-data.frame(myroi.names,myres2v3.a)
+  colnames(kiir)<-c('roi','tvol','pvol','tAge','pAge','tECTnum','pECTnum','tBASMADRS','pBASMADRS')
+  write.csv(kiir, '/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/Mixed_N156_ABSMADRSperc-dVol+Age+ECTnum+BASMADRS+Site.csv')
+
+
+#+END_SRC
+#+RESULTS:
+We did not expect too much here given Oltedal et al. 2018.
+
 **** Calculating mixed effect \Delta MADRS ~ \Delta Volume + Age + ECTnum + Site + medication
 #+BEGIN_SRC R :session ECTanal
   library(nlme)
@@ -701,6 +734,38 @@ expected since age correlates with TotBrainVolume pretty much)
 Interestingly no results here either. I did the whole analysis with
 BaselineTotalBrain volume as control for confound, very similar results. (as
 expected since age correlates with TotBrainVolume pretty much)
+
+**** Calculating mixed effect \Abs MADRS ~ EF + Age + ECTnum + Bas MADRS + Site
+#+BEGIN_SRC R :session ECTanal
+  myres3v3.a<-matrix(NA,length(myroi.names),8)
+  for (i in 1:dim(varnames)[1])
+  {
+    ef<-fd[ind.fd,grep(varnames[i,1],colnames(fd))]
+    dvol<-fd[ind.fd,grep(varnames[i,2],colnames(fd))]
+    #lm.1<-lm(madrs_hdrs_percentage_cahnge~dvol+Age.1+rul_number.1+Site.1,data=fd[ind.fd,])
+    lm.1<-lme(madrs_hdrs_conversion.1-madrs_hdrs_conversion.3~ef+Age.1+rul_number.1+madrs_hdrs_conversion.1,data=fd[ind.fd,],random=~1|Site.1, na.action=na.omit)
+
+    #lm.1<-lm(madrs_hdrs_percentage_cahnge~ef,data=fd[ind.fd,])
+    res<-summary(lm.1)
+    myres3v3.a[i,1]<-res$tTable[2,4]
+    myres3v3.a[i,2]<-res$tTable[2,5]
+    myres3v3.a[i,3]<-res$tTable[3,4]
+    myres3v3.a[i,4]<-res$tTable[3,5]
+    myres3v3.a[i,5]<-res$tTable[4,4]
+    myres3v3.a[i,6]<-res$tTable[4,5]
+    myres3v3.a[i,7]<-res$tTable[5,4]
+    myres3v3.a[i,8]<-res$tTable[5,5]
+
+
+  }
+  kiir<-data.frame(myroi.names,myres3v3.a)
+  colnames(kiir)<-c('roi','tEF','pEF','tAge','pAge','tECTnum','pECTnum','tBASMADRS','pBASMADRS')
+  write.csv(kiir, '/nethome/amiklos/argyelan@gmail.com/projects/ECT/Bergen/ECTEF_collaboration/RULcorrelation/Mixed_N156_ABSMADRSperc-EF+Age+ECTnum+BASMADRS+Site.csv')
+
+
+#+END_SRC
+#+RESULTS:
+We did not expect too much here given Oltedal et al. 2018.
 
 **** Calculating mixed effect \Delta MADRS ~ EF + Age + ECTnumber + Site + medication
 #+BEGIN_SRC R :session ECTanal
